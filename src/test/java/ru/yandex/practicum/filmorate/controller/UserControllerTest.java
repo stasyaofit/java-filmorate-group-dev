@@ -57,7 +57,6 @@ class UserControllerTest {
         System.out.println(controller.findAll().get(0));
 
         controller.updateUser(updateUser);
-        updateUser.setName(updateUser.getLogin());
         assertEquals(updateUser, controller.findAll().get(0));
         System.out.println(controller.findAll().get(0));
     }
