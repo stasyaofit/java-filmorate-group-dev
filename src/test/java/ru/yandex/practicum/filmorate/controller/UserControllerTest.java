@@ -3,10 +3,13 @@ package ru.yandex.practicum.filmorate.controller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import java.time.LocalDate;
@@ -19,7 +22,6 @@ class UserControllerTest {
     private UserController controller;
     private User user;
     private User updateUser;
-    private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     @BeforeEach
     void setUp() {
@@ -48,11 +50,19 @@ class UserControllerTest {
                 .build();
     }
 
+    private void validateInput(User user) {
+        Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
+        }
+    }
+
     @DisplayName("Создание валидного пользователя и обновление на пользователя без отображаемого имени")
     @Test
     void createAndUpdateValidUser() {
-        controller.createUser(user);
-        user.setId(1);
+        final int id = controller.createUser(user).getId();
+        user.setId(id);
         assertEquals(user, controller.findAll().get(0));
         System.out.println(controller.findAll().get(0));
 
@@ -69,36 +79,31 @@ class UserControllerTest {
     }
 
     @DisplayName("Валидация пользователя с пустой или некорректной почтой")
-    @Test
-    void validateEmptyOrNotCorrectEmailUser() {
-        user.setEmail("");
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertEquals(1, violations.size(), "Валидация некорректна");
-        System.out.println(violations);
-
-        user.setEmail("login mail");
-        violations = validator.validate(user);
-        assertEquals(1, violations.size(), "Валидация некорректна");
-        System.out.println(violations);
+    @ParameterizedTest
+    @ValueSource(strings = {"", "login mail"})
+    void validateEmptyOrNotCorrectEmailUser(String email) {
+        user.setEmail(email);
+        final ConstraintViolationException ex = assertThrows(ConstraintViolationException.class,
+                () -> validateInput(user));
+        assertEquals(ConstraintViolationException.class, ex.getClass());
     }
 
-    @DisplayName("Валидация пользователя с пустым логином или состоящим из пробелов")
-    @Test
-    void validateEmptyOrNotCorrectLoginUser() {
-        user.setLogin("");
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertEquals(1, violations.size(), "Валидация некорректна");
-
-        user.setLogin("     ");
-        violations = validator.validate(user);
-        assertEquals(1, violations.size(), "Валидация некорректна");
+    @DisplayName("Валидация пользователя: с пустым логином/ логин из пробелов/ логин, содержащий пробел")
+    @ParameterizedTest
+    @ValueSource(strings = {"", "     ", "Nick Name"})
+    void validateEmptyOrNotCorrectLoginUser(String login) {
+        user.setLogin(login);
+        ConstraintViolationException ex = assertThrows(ConstraintViolationException.class,
+                () -> validateInput(user));
+        assertEquals(ConstraintViolationException.class, ex.getClass());
     }
 
     @DisplayName("Валидация пользователя с датой рождения в будущем")
     @Test
     void validateFutureBirthdayUser() {
         user.setBirthday(LocalDate.of(2450, 2, 25));
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertEquals(1, violations.size(), "Валидация некорректна");
+        final ConstraintViolationException ex = assertThrows(ConstraintViolationException.class,
+                () -> validateInput(user));
+        assertEquals(ConstraintViolationException.class, ex.getClass());
     }
 }
