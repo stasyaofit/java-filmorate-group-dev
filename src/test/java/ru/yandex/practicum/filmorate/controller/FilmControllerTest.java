@@ -58,8 +58,8 @@ class FilmControllerTest {
     @DisplayName("Создание и обновление валидного фильма")
     @Test
     void createAndUpdateValidFilm() {
-        controller.createFilm(film);
-        film.setId(1);
+        final int id = controller.createFilm(film).getId();
+        film.setId(id);
         assertEquals(film, controller.findAll().get(0));
         System.out.println(controller.findAll());
 
@@ -72,8 +72,8 @@ class FilmControllerTest {
     @Test
     void createAndUpdateMinReleaseDateFilm() {
         film.setReleaseDate(minDateRelease);
-        controller.createFilm(film);
-        film.setId(1);
+        final int id = controller.createFilm(film).getId();
+        film.setId(id);
         assertEquals(film, controller.findAll().get(0));
 
         controller.updateFilm(updateFilm);
@@ -126,8 +126,8 @@ class FilmControllerTest {
     @Test
     void createAndUpdateMaxLongDescriptionFilm() {
         film.setDescription(("a").repeat(200));
-        controller.createFilm(film);
-        film.setId(1);
+        final int id = controller.createFilm(film).getId();
+        film.setId(id);
         assertEquals(film, controller.findAll().get(0));
         assertEquals(200, controller.findAll().get(0).getDescription().length());
 
