@@ -6,6 +6,7 @@ import lombok.Data;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.PastOrPresent;
+import javax.validation.constraints.Pattern;
 import java.time.LocalDate;
 
 @Builder
@@ -18,6 +19,7 @@ public class User {
     private String email;
 
     @NotBlank(message = "Логин не может быть пустым")
+    @Pattern(regexp = "\\S+", message = "В логине не могут быть пробелы.")
     private String login;
 
     private String name;
