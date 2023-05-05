@@ -93,7 +93,7 @@ class UserControllerTest {
     @ValueSource(strings = {"", "     ", "Nick Name"})
     void validateEmptyOrNotCorrectLoginUser(String login) {
         user.setLogin(login);
-        ConstraintViolationException ex = assertThrows(ConstraintViolationException.class,
+        final ConstraintViolationException ex = assertThrows(ConstraintViolationException.class,
                 () -> validateInput(user));
         assertEquals(ConstraintViolationException.class, ex.getClass());
     }
