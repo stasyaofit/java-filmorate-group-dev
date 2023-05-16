@@ -1,58 +1,74 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    private int nextId = 1;
-    private final Map<Integer, Film> films = new HashMap<>();
+    private final FilmService filmService;
+
+    @Autowired
+    public FilmController(FilmService filmService) {
+        this.filmService = filmService;
+    }
 
     @GetMapping
     public List<Film> findAll() {
-        return new ArrayList<>(films.values());
+        log.info("Получен GET-запрос к эндпоинту '/films' на получение списка всех фильмов.");
+        return filmService.findAll();
     }
 
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film) {
         log.info("Получен POST-запрос к эндпоинту '/films' на добавление фильма: {}.", film);
-        if (isValidFilm(film)) {
-            film.setId(nextId++);
-            films.put(film.getId(), film);
-            log.info("Фильм с ID= {} успешно добавлен.", film.getId());
-        }
-        return film;
+        return filmService.createFilm(film);
     }
 
     @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
         log.info("Получен PUT-запрос к эндпоинту '/films' на обновления фильма с ID = {}", film.getId());
-        if (isValidFilm(film)) {
-            if (films.containsKey(film.getId())) {
-                films.put(film.getId(), film);
-                log.info("Фильм с ID = {} успешно обновлён.", film.getId());
-            } else {
-                throw new ValidationException(String.format("Фильма с id: %s не существует", film.getId()));
-            }
-        }
-        return film;
+        return filmService.updateFilm(film);
     }
 
-    private boolean isValidFilm(Film film) {
-        if (film.getReleaseDate().isBefore(LocalDate.parse("1895-12-28"))) {
-            throw new ValidationException("Дата релиза должна быть не раньше 28 декабря 1895 года");
+    @GetMapping("/{id}")
+    public Film getFilmById(@PathVariable Long id) {
+        log.info("Получен GET-запрос к эндпоинту '/films/{id}' на получение фильма с ID = {}.", id);
+        return filmService.getFilmById(id);
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable Long id, @PathVariable Long userId) {
+        log.info("Получен PUT-запрос к эндпоинту '/films/{id}/like/{userId}'." +
+                " Пользователь с ID {} ставит лайк фильму с ID {}.", userId, id);
+        filmService.addLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    public void removeLike(@PathVariable Long id, @PathVariable Long userId) {
+        log.info("Получен DELETE-запрос к эндпоинту '/films/{id}/like/{userId}'." +
+                " Пользователь с ID {} удаляет лайк фильму с ID {}.", userId, id);
+        filmService.removeLike(id, userId);
+    }
+
+    @GetMapping("/popular")
+    public List<Film> getTopNPopularFilms(@RequestParam(required = false) Long count) {
+        if (count == null) {
+            log.info("Получен GET-запрос к эндпоинту '/films/popular'");
+           return filmService.getTopNPopularFilms(10L);
+        } else {
+            log.info("Получен GET-запрос к эндпоинту '/films/popular?count={count}' " +
+                    "на получение топ-{} фильмов.", count);
+            return filmService.getTopNPopularFilms(count);
         }
-        return true;
     }
 }
+
+

@@ -3,10 +3,17 @@ package ru.yandex.practicum.filmorate.controller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
-import javax.validation.*;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Validation;
+import javax.validation.Validator;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -14,15 +21,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class FilmControllerTest {
+    private final LocalDate failDateRelease = LocalDate.of(1895, 12, 27);
+    private final LocalDate minDateRelease = LocalDate.of(1895, 12, 28);
     private FilmController controller;
     private Film film;
     private Film updateFilm;
-    private final LocalDate failDateRelease = LocalDate.of(1895, 12, 27);
-    private final LocalDate minDateRelease = LocalDate.of(1895, 12, 28);
 
     @BeforeEach
     void setUp() {
-        controller = new FilmController();
+        InMemoryFilmStorage filmStorage = new InMemoryFilmStorage();
+        InMemoryUserStorage userStorage = new InMemoryUserStorage();
+        FilmService service = new FilmService(filmStorage, userStorage);
+        controller = new FilmController(service);
         film = getValidFilm();
         updateFilm = getValidUpdateFilm();
     }
@@ -36,29 +46,29 @@ class FilmControllerTest {
     }
 
     private Film getValidFilm() {
-        return Film.builder()
-                .id(0)
-                .name("Гиперболоид инженера Гарина")
-                .description("Фильм по одноименной книге Алексея Толстого")
-                .releaseDate(LocalDate.of(1965, 8, 12))
-                .duration(96)
-                .build();
+        Film film = new Film();
+        film.setId(0L);
+        film.setName("Гиперболоид инженера Гарина");
+        film.setDescription("Фильм по одноименной книге Алексея Толстого");
+        film.setReleaseDate(LocalDate.of(1965, 8, 12));
+        film.setDuration(96);
+        return film;
     }
 
     private Film getValidUpdateFilm() {
-        return Film.builder()
-                .id(1)
-                .name("Другое название")
-                .description("Другое описание")
-                .releaseDate(minDateRelease)
-                .duration(20)
-                .build();
+        Film updateFilm = new Film();
+        updateFilm.setId(1L);
+        updateFilm.setName("Другое название");
+        updateFilm.setDescription("Другое описание");
+        updateFilm.setReleaseDate(minDateRelease);
+        updateFilm.setDuration(20);
+        return updateFilm;
     }
 
     @DisplayName("Создание и обновление валидного фильма")
     @Test
     void createAndUpdateValidFilm() {
-        final int id = controller.createFilm(film).getId();
+        final Long id = controller.createFilm(film).getId();
         film.setId(id);
         assertEquals(film, controller.findAll().get(0));
         System.out.println(controller.findAll());
@@ -72,7 +82,7 @@ class FilmControllerTest {
     @Test
     void createAndUpdateMinReleaseDateFilm() {
         film.setReleaseDate(minDateRelease);
-        final int id = controller.createFilm(film).getId();
+        final Long id = controller.createFilm(film).getId();
         film.setId(id);
         assertEquals(film, controller.findAll().get(0));
 
@@ -100,8 +110,8 @@ class FilmControllerTest {
     @DisplayName("Обновление фильма c несуществующим id")
     @Test
     void updateNotFoundIdFilm() {
-        final ValidationException ex = assertThrows(ValidationException.class, () -> controller.updateFilm(film));
-        assertEquals(ValidationException.class, ex.getClass());
+        final FilmNotFoundException ex = assertThrows(FilmNotFoundException.class, () -> controller.updateFilm(film));
+        assertEquals(FilmNotFoundException.class, ex.getClass());
     }
 
     @DisplayName("Валидация фильма с пустым названием")
@@ -126,7 +136,7 @@ class FilmControllerTest {
     @Test
     void createAndUpdateMaxLongDescriptionFilm() {
         film.setDescription(("a").repeat(200));
-        final int id = controller.createFilm(film).getId();
+        final Long id = controller.createFilm(film).getId();
         film.setId(id);
         assertEquals(film, controller.findAll().get(0));
         assertEquals(200, controller.findAll().get(0).getDescription().length());

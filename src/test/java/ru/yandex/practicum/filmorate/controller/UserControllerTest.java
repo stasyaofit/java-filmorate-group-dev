@@ -5,8 +5,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -25,29 +28,32 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        controller = new UserController();
+        InMemoryUserStorage userStorage = new InMemoryUserStorage();
+        InMemoryFilmStorage filmStorage = new InMemoryFilmStorage();
+        UserService service = new UserService(userStorage, filmStorage);
+        controller = new UserController(service);
         user = getValidUser();
         updateUser = getUpdateValidUser();
     }
 
     private User getValidUser() {
-        return User.builder()
-                .id(0)
-                .email("example@mail.ru")
-                .login("login")
-                .name("name")
-                .birthday(LocalDate.now())
-                .build();
+        User user = new User();
+        user.setId(0L);
+        user.setEmail("example@mail.ru");
+        user.setLogin("login");
+        user.setName("name");
+        user.setBirthday(LocalDate.now());
+        return user;
     }
 
     private User getUpdateValidUser() {
-        return User.builder()
-                .id(1)
-                .email("another@mail.ru")
-                .login("new_login")
-                .name("")
-                .birthday(LocalDate.now())
-                .build();
+        User updateUser = new User();
+        updateUser.setId(1L);
+        updateUser.setEmail("another@mail.ru");
+        updateUser.setLogin("new_login");
+        updateUser.setName("");
+        updateUser.setBirthday(LocalDate.now());
+        return updateUser;
     }
 
     private void validateInput(User user) {
@@ -61,7 +67,8 @@ class UserControllerTest {
     @DisplayName("Создание валидного пользователя и обновление на пользователя без отображаемого имени")
     @Test
     void createAndUpdateValidUser() {
-        final int id = controller.createUser(user).getId();
+        final Long id = controller.createUser(user).getId();
+
         user.setId(id);
         assertEquals(user, controller.findAll().get(0));
         System.out.println(controller.findAll().get(0));
@@ -74,10 +81,11 @@ class UserControllerTest {
     @DisplayName("Обновление несуществующего пользователя")
     @Test
     void updateNotFoundIdUser() {
-        final ValidationException ex = assertThrows(ValidationException.class, () -> controller.updateUser(user));
-        assertEquals(ValidationException.class, ex.getClass());
+        final UserNotFoundException ex = assertThrows(UserNotFoundException.class, () -> controller.updateUser(user));
+        assertEquals(UserNotFoundException.class, ex.getClass());
     }
 
+    //
     @DisplayName("Валидация пользователя с пустой или некорректной почтой")
     @ParameterizedTest
     @ValueSource(strings = {"", "login mail"})
