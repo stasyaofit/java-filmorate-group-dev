@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
+import java.util.Collection;
 import java.util.List;
 
 @Slf4j
@@ -21,7 +22,7 @@ public class UserController {
     }
 
     @GetMapping
-    public List<User> findAll() {
+    public Collection<User> findAll() {
         log.info("Получен GET-запрос к эндпоинту '/users' на получение списка всех пользователей.");
         return userService.findAll();
     }

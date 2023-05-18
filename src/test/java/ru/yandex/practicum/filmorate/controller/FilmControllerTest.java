@@ -7,8 +7,10 @@ import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -29,8 +31,8 @@ class FilmControllerTest {
 
     @BeforeEach
     void setUp() {
-        InMemoryFilmStorage filmStorage = new InMemoryFilmStorage();
-        InMemoryUserStorage userStorage = new InMemoryUserStorage();
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+        UserStorage userStorage = new InMemoryUserStorage();
         FilmService service = new FilmService(filmStorage, userStorage);
         controller = new FilmController(service);
         film = getValidFilm();
@@ -70,11 +72,11 @@ class FilmControllerTest {
     void createAndUpdateValidFilm() {
         final Long id = controller.createFilm(film).getId();
         film.setId(id);
-        assertEquals(film, controller.findAll().get(0));
+        assertEquals(film, controller.getFilmById(id));
         System.out.println(controller.findAll());
 
         controller.updateFilm(updateFilm);
-        assertEquals(updateFilm, controller.findAll().get(0));
+        assertEquals(updateFilm, controller.getFilmById(id));
         System.out.println(controller.findAll());
     }
 
@@ -84,18 +86,17 @@ class FilmControllerTest {
         film.setReleaseDate(minDateRelease);
         final Long id = controller.createFilm(film).getId();
         film.setId(id);
-        assertEquals(film, controller.findAll().get(0));
+        assertEquals(film, controller.getFilmById(id));
 
         controller.updateFilm(updateFilm);
-        assertEquals(updateFilm, controller.findAll().get(0));
+        assertEquals(updateFilm, controller.getFilmById(id));
     }
 
     @DisplayName("Создание фильма c невалидной датой релиза")
     @Test
     void createFailReleaseDateFilm() {
         film.setReleaseDate(failDateRelease);
-        final ValidationException ex = assertThrows(ValidationException.class, () -> controller.createFilm(film));
-        assertEquals(ValidationException.class, ex.getClass());
+        assertThrows(ValidationException.class, () -> controller.createFilm(film));
     }
 
     @DisplayName("Обновление фильма c невалидной датой релиза")
@@ -103,33 +104,27 @@ class FilmControllerTest {
     void updateFailReleaseDateFilm() {
         controller.createFilm(film);
         updateFilm.setReleaseDate(failDateRelease);
-        final ValidationException ex = assertThrows(ValidationException.class, () -> controller.updateFilm(updateFilm));
-        assertEquals(ValidationException.class, ex.getClass());
+        assertThrows(ValidationException.class, () -> controller.updateFilm(updateFilm));
     }
 
     @DisplayName("Обновление фильма c несуществующим id")
     @Test
     void updateNotFoundIdFilm() {
-        final FilmNotFoundException ex = assertThrows(FilmNotFoundException.class, () -> controller.updateFilm(film));
-        assertEquals(FilmNotFoundException.class, ex.getClass());
+        assertThrows(FilmNotFoundException.class, () -> controller.updateFilm(film));
     }
 
     @DisplayName("Валидация фильма с пустым названием")
     @Test
     void validateFailNameFilm() {
         film.setName("");
-        final ConstraintViolationException ex = assertThrows(ConstraintViolationException.class,
-                () -> validateInput(film));
-        assertEquals(ConstraintViolationException.class, ex.getClass());
+        assertThrows(ConstraintViolationException.class, () -> validateInput(film));
     }
 
     @DisplayName("Валидация фильма с пустым описанием")
     @Test
     void validateEmptyDescriptionFilm() {
         film.setDescription("");
-        final ConstraintViolationException ex = assertThrows(ConstraintViolationException.class,
-                () -> validateInput(film));
-        assertEquals(ConstraintViolationException.class, ex.getClass());
+        assertThrows(ConstraintViolationException.class, () -> validateInput(film));
     }
 
     @DisplayName("Создание и обновление фильма с описанием 200 символов")
@@ -138,39 +133,33 @@ class FilmControllerTest {
         film.setDescription(("a").repeat(200));
         final Long id = controller.createFilm(film).getId();
         film.setId(id);
-        assertEquals(film, controller.findAll().get(0));
-        assertEquals(200, controller.findAll().get(0).getDescription().length());
+        assertEquals(film, controller.getFilmById(id));
+        assertEquals(200, controller.getFilmById(id).getDescription().length());
 
         updateFilm.setDescription(("a").repeat(200));
         controller.updateFilm(updateFilm);
-        assertEquals(updateFilm, controller.findAll().get(0));
-        assertEquals(200, controller.findAll().get(0).getDescription().length());
+        assertEquals(updateFilm, controller.getFilmById(id));
+        assertEquals(200, controller.getFilmById(id).getDescription().length());
     }
 
     @DisplayName("Валидация фильма с описанием более 200 символов")
     @Test
     void validateVeryLongDescriptionFilm() {
         film.setDescription(("a").repeat(201));
-        final ConstraintViolationException ex = assertThrows(ConstraintViolationException.class,
-                () -> validateInput(film));
-        assertEquals(ConstraintViolationException.class, ex.getClass());
+        assertThrows(ConstraintViolationException.class, () -> validateInput(film));
     }
 
     @DisplayName("Валидация фильма с отрицательной продолжительность")
     @Test
     void validateNegativeDurationFilm() {
         film.setDuration(-10);
-        final ConstraintViolationException ex = assertThrows(ConstraintViolationException.class,
-                () -> validateInput(film));
-        assertEquals(ConstraintViolationException.class, ex.getClass());
+        assertThrows(ConstraintViolationException.class, () -> validateInput(film));
     }
 
     @DisplayName("Валидация фильма с нулевой продолжительностью")
     @Test
     void validateZeroDurationFilm() {
         film.setDuration(0);
-        final ConstraintViolationException ex = assertThrows(ConstraintViolationException.class,
-                () -> validateInput(film));
-        assertEquals(ConstraintViolationException.class, ex.getClass());
+        assertThrows(ConstraintViolationException.class, () -> validateInput(film));
     }
 }

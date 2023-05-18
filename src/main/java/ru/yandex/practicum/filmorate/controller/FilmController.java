@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import java.util.Collection;
 import java.util.List;
 
 @Slf4j
@@ -21,7 +22,7 @@ public class FilmController {
     }
 
     @GetMapping
-    public List<Film> findAll() {
+    public Collection<Film> findAll() {
         log.info("Получен GET-запрос к эндпоинту '/films' на получение списка всех фильмов.");
         return filmService.findAll();
     }

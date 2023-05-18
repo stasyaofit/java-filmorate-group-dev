@@ -2,15 +2,13 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -20,42 +18,38 @@ public class InMemoryFilmStorage implements FilmStorage {
     private Long nextId = 1L;
 
     @Override
-    public List<Film> findAll() {
-        return new ArrayList<>(films.values());
+    public Film getFilm(Long id) {
+        return films.get(id);
+    }
+
+    @Override
+    public Collection<Film> findAll() {
+        return films.values();
     }
 
     @Override
     public Film createFilm(Film film) {
-        if (isValidFilm(film)) {
-            film.setId(nextId++);
-            films.put(film.getId(), film);
-            log.info("Фильм с ID= {} успешно добавлен.", film.getId());
-        }
+        film.setId(nextId++);
+        films.put(film.getId(), film);
+        log.info("Фильм с ID= {} успешно добавлен.", film.getId());
+
         return film;
     }
 
     @Override
     public Film updateFilm(Film film) {
-        if (isValidFilm(film)) {
-            if (films.containsKey(film.getId())) {
-                films.put(film.getId(), film);
-                log.info("Фильм с ID = {} успешно обновлён.", film.getId());
-            } else {
-                throw new FilmNotFoundException(String.format("Фильма с id: %s не найден.", film.getId()));
-            }
-        }
+        films.put(film.getId(), film);
+        log.info("Фильм с ID = {} успешно обновлён.", film.getId());
+
         return film;
     }
 
-    private boolean isValidFilm(Film film) {
-        if (film.getReleaseDate().isBefore(LocalDate.parse("1895-12-28"))) {
-            throw new ValidationException("Дата релиза должна быть не раньше 28 декабря 1895 года");
-        }
-        return true;
-    }
+    @Override
+    public List<Film> getTopNPopularFilms(Long count) {
 
-
-    public Map<Long, Film> getFilms() {
-        return films;
+        return findAll().stream()
+                .sorted((f1, f2) -> f2.getLikes().size() - f1.getLikes().size())
+                .limit(count)
+                .collect(Collectors.toList());
     }
 }

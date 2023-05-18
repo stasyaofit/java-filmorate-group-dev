@@ -8,8 +8,10 @@ import org.junit.jupiter.params.provider.ValueSource;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.film.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
@@ -28,8 +30,8 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
-        InMemoryUserStorage userStorage = new InMemoryUserStorage();
-        InMemoryFilmStorage filmStorage = new InMemoryFilmStorage();
+        UserStorage userStorage = new InMemoryUserStorage();
+        FilmStorage filmStorage = new InMemoryFilmStorage();
         UserService service = new UserService(userStorage, filmStorage);
         controller = new UserController(service);
         user = getValidUser();
@@ -70,30 +72,26 @@ class UserControllerTest {
         final Long id = controller.createUser(user).getId();
 
         user.setId(id);
-        assertEquals(user, controller.findAll().get(0));
-        System.out.println(controller.findAll().get(0));
+        assertEquals(user, controller.getUserById(id));
+        System.out.println(controller.findAll());
 
         controller.updateUser(updateUser);
-        assertEquals(updateUser, controller.findAll().get(0));
-        System.out.println(controller.findAll().get(0));
+        assertEquals(updateUser, controller.getUserById(id));
+        System.out.println(controller.findAll());
     }
 
     @DisplayName("Обновление несуществующего пользователя")
     @Test
     void updateNotFoundIdUser() {
-        final UserNotFoundException ex = assertThrows(UserNotFoundException.class, () -> controller.updateUser(user));
-        assertEquals(UserNotFoundException.class, ex.getClass());
+        assertThrows(UserNotFoundException.class, () -> controller.updateUser(user));
     }
 
-    //
     @DisplayName("Валидация пользователя с пустой или некорректной почтой")
     @ParameterizedTest
     @ValueSource(strings = {"", "login mail"})
     void validateEmptyOrNotCorrectEmailUser(String email) {
         user.setEmail(email);
-        final ConstraintViolationException ex = assertThrows(ConstraintViolationException.class,
-                () -> validateInput(user));
-        assertEquals(ConstraintViolationException.class, ex.getClass());
+        assertThrows(ConstraintViolationException.class, () -> validateInput(user));
     }
 
     @DisplayName("Валидация пользователя: с пустым логином/ логин из пробелов/ логин, содержащий пробел")
@@ -101,17 +99,13 @@ class UserControllerTest {
     @ValueSource(strings = {"", "     ", "Nick Name"})
     void validateEmptyOrNotCorrectLoginUser(String login) {
         user.setLogin(login);
-        final ConstraintViolationException ex = assertThrows(ConstraintViolationException.class,
-                () -> validateInput(user));
-        assertEquals(ConstraintViolationException.class, ex.getClass());
+        assertThrows(ConstraintViolationException.class, () -> validateInput(user));
     }
 
     @DisplayName("Валидация пользователя с датой рождения в будущем")
     @Test
     void validateFutureBirthdayUser() {
         user.setBirthday(LocalDate.of(2450, 2, 25));
-        final ConstraintViolationException ex = assertThrows(ConstraintViolationException.class,
-                () -> validateInput(user));
-        assertEquals(ConstraintViolationException.class, ex.getClass());
+        assertThrows(ConstraintViolationException.class, () -> validateInput(user));
     }
 }
