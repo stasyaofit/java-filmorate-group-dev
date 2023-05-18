@@ -20,7 +20,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Collection<User> findAll() {
-        return users.values();
+        return Collections.unmodifiableCollection(users.values());
     }
 
     @Override
