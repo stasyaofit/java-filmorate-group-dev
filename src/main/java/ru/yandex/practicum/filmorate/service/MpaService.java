@@ -19,6 +19,7 @@ public class MpaService {
     public Collection<Mpa> findAll() {
         return mpaStorage.findAll();
     }
+
     public Mpa getMpaById(Integer id) {
         checkMpaId(id);
         return mpaStorage.getMpa(id);
