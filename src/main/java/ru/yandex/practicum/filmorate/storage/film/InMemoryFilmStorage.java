@@ -42,6 +42,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public void deleteFilm(Long id) {
+        films.remove(id);
+        log.info("Фильм с ID={} успешно удален", id);
+    }
+
     public List<Film> getTopNPopularFilms(Long count) {
 
         return findAll().stream()

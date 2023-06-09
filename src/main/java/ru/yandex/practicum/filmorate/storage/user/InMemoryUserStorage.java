@@ -40,6 +40,12 @@ public class InMemoryUserStorage implements UserStorage {
         return user;
     }
 
+    @Override
+    public void deleteUser(Long userId) {
+        users.remove(userId);
+        log.info("Пользователь с ID = {} успешно удалён.", userId);
+    }
+
     public List<User> getUserFriendsById(Long id) {
         User user = getUser(id);
         return findAll().stream()

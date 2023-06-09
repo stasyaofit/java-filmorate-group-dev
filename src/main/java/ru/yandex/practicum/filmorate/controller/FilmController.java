@@ -70,6 +70,12 @@ public class FilmController {
             return filmService.getTopNPopularFilms(count);
         }
     }
+
+    @DeleteMapping("/{id}")
+    public void deleteFilm(@PathVariable Long id) {
+        log.info("Получен DELETE-запрос к эндпоинту: '/films' на удаление фильма с ID={}", id);
+        filmService.deleteFilm(id);
+    }
 }
 
 
