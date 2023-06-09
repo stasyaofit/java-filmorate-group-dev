@@ -28,7 +28,6 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 @AutoConfigureCache
 @Transactional
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-
 class FilmorateApplicationTests {
 
     private final UserDbStorage userStorage;
@@ -256,6 +255,7 @@ class FilmorateApplicationTests {
         assertThat(userService.getUserFriendsById(firstUser.getId())).hasSize(1);
         assertThat(userService.getUserFriendsById(firstUser.getId())).contains(secondUser);
     }
+
     @Test
     public void testDeleteFriend() {
         firstUser = userStorage.createUser(firstUser);
