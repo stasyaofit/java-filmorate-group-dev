@@ -8,8 +8,12 @@ import java.util.List;
 
 public interface GenreStorage {
     Collection<Genre> findAll();
+
     Genre getGenre(Integer id);
+
     void delete(Film film);
+
     void add(Film film);
+
     List<Genre> getFilmGenres(Long filmId);
 }

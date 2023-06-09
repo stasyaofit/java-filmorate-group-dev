@@ -18,7 +18,7 @@ import java.util.List;
 public class UserService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
-    private  FriendStorage friendStorage;
+    private FriendStorage friendStorage;
 
     @Autowired
     public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
@@ -28,10 +28,12 @@ public class UserService {
         this.filmStorage = filmStorage;
         this.friendStorage = friendStorage;
     }
+
     public UserService(UserStorage userStorage, FilmStorage filmStorage) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
     }
+
     public Collection<User> findAll() {
         return userStorage.findAll();
     }

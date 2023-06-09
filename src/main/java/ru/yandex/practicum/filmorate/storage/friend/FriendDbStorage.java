@@ -11,11 +11,13 @@ import java.util.List;
 @Repository
 public class FriendDbStorage implements FriendStorage {
     private final JdbcTemplate jdbcTemplate;
+
     @Autowired
     public FriendDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
 
     }
+
     public void addFriend(Long userId, Long friendId) {
         boolean status = false;
         if (getUserFriendsIds(friendId).contains(userId)) {
@@ -27,6 +29,7 @@ public class FriendDbStorage implements FriendStorage {
         String sql = "INSERT INTO FRIENDS (USER_ID, FRIEND_ID, STATUS) VALUES (?, ?, ?)";
         jdbcTemplate.update(sql, userId, friendId, status);
     }
+
     @Override
     public void deleteFriend(Long userId, Long friendId) {
         String sql = "DELETE FROM friends WHERE USER_ID = ? AND FRIEND_ID = ?";

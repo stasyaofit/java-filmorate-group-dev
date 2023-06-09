@@ -12,6 +12,7 @@ import java.util.Collections;
 @Repository
 public class MpaDbStorage implements MpaStorage {
     private final JdbcTemplate jdbcTemplate;
+
     @Autowired
     public MpaDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
