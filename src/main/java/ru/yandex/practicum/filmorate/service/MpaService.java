@@ -16,6 +16,7 @@ public class MpaService {
     public MpaService(MpaStorage mpaStorage) {
         this.mpaStorage = mpaStorage;
     }
+
     public Collection<Mpa> findAll() {
         return mpaStorage.findAll();
     }
