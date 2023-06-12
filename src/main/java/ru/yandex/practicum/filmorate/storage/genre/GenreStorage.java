@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage.genre;
 
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.Collection;
@@ -16,8 +15,6 @@ public interface GenreStorage {
     void deleteGenresFromFilm(Long filmId);
 
     void addGenreToFilm(Long filmId, Integer genreId);
-
-    List<Genre> getFilmGenres(Long filmId);
 
     Map<Long, Set<Genre>> getGenreMap(List<Long> ids);
 }

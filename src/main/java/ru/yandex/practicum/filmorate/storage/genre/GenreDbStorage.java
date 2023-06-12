@@ -50,13 +50,6 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     @Override
-    public List<Genre> getFilmGenres(Long filmId) {
-        String sql = "SELECT G.GENRE_ID, GENRE_NAME FROM FILM_GENRES as fg" +
-                " INNER JOIN GENRES as G ON G.GENRE_ID = fg.GENRE_ID WHERE FILM_ID = ?";
-        return jdbcTemplate.query(sql, this::mapRowToGenre, filmId);
-    }
-
-    @Override
     public Map<Long, Set<Genre>> getGenreMap(List<Long> ids) {
         String sql = "SELECT FG.FILM_ID, FG.GENRE_ID, GENRE_NAME " +
                 "FROM FILM_GENRES AS FG JOIN GENRES as G on FG.GENRE_ID = G.GENRE_ID " +
