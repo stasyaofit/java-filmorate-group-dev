@@ -63,12 +63,11 @@ public class FilmController {
     public List<Film> getTopNPopularFilms(@RequestParam(required = false) Long count) {
         if (count == null) {
             log.info("Получен GET-запрос к эндпоинту '/films/popular'");
-           return filmService.getTopNPopularFilms(10L);
-        } else {
-            log.info("Получен GET-запрос к эндпоинту '/films/popular?count={count}' " +
-                    "на получение топ-{} фильмов.", count);
-            return filmService.getTopNPopularFilms(count);
+            return filmService.getTopNPopularFilms(10L);
         }
+        log.info("Получен GET-запрос к эндпоинту '/films/popular?count={count}' " +
+                "на получение топ-{} фильмов.", count);
+        return filmService.getTopNPopularFilms(count);
     }
 
     @DeleteMapping("/{id}")

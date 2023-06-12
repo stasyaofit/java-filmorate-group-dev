@@ -7,6 +7,8 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class MpaService {
@@ -22,14 +24,14 @@ public class MpaService {
     }
 
     public Mpa getMpaById(Integer id) {
-        checkMpaId(id);
-        return mpaStorage.getMpa(id);
-    }
-
-    public void checkMpaId(Integer id) {
-        if (id < 1 || mpaStorage.getMpa(id) == null) {
+        Mpa mpa = mpaStorage.getMpa(id);
+        if (mpa == null) {
             throw new MpaNotFoundException("Рейтинг с ID = " + id + " не найден.");
         }
+        return mpa;
     }
 
+    public Map<Long, Mpa> getMpaMap(List<Long> ids) {
+        return mpaStorage.getMpaMap(ids);
+    }
 }

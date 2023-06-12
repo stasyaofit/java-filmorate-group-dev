@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.friend.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
@@ -17,21 +15,10 @@ import java.util.List;
 @Slf4j
 public class UserService {
     private final UserStorage userStorage;
-    private final FilmStorage filmStorage;
-    private FriendStorage friendStorage;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
-                       @Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       FriendStorage friendStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
         this.userStorage = userStorage;
-        this.filmStorage = filmStorage;
-        this.friendStorage = friendStorage;
-    }
-
-    public UserService(UserStorage userStorage, FilmStorage filmStorage) {
-        this.userStorage = userStorage;
-        this.filmStorage = filmStorage;
     }
 
     public Collection<User> findAll() {
@@ -57,31 +44,34 @@ public class UserService {
     public void addFriend(Long id, Long friendId) {
         checkUserId(id);
         checkUserId(friendId);
-        friendStorage.addFriend(id, friendId);
+        userStorage.addFriend(id, friendId);
     }
 
     public void removeFriend(Long id, Long friendId) {
         checkUserId(id);
         checkUserId(friendId);
-        friendStorage.deleteFriend(id, friendId);
+        userStorage.deleteFriend(id, friendId);
         log.info("Пользователь(id = {}) удалён из друзей.", friendId);
 
     }
 
     public User getUserById(Long id) {
-        checkUserId(id);
-        return userStorage.getUser(id);
+        User user = userStorage.getUser(id);
+        if (user == null) {
+            throw new UserNotFoundException("Пользователь  с ID = " + id + " не найден.");
+        }
+        return user;
     }
 
     public List<User> getUserFriendsById(Long id) {
         checkUserId(id);
-        return friendStorage.getUserFriendsById(id);
+        return userStorage.getUserFriendsById(id);
     }
 
     public List<User> getCommonFriends(Long userId, Long otherId) {
         checkUserId(userId);
         checkUserId(otherId);
-        return friendStorage.getCommonFriends(userId, otherId);
+        return userStorage.getCommonFriends(userId, otherId);
     }
 
     private void checkName(User user) {

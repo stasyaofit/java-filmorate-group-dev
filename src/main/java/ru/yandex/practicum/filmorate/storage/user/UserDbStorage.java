@@ -6,38 +6,33 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.friend.FriendStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 
 @Repository("userDbStorage")
 @Slf4j
-
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final FriendStorage friendStorage;
 
     @Autowired
-    public UserDbStorage(JdbcTemplate jdbcTemplate, FriendStorage friendStorage) {
+    public UserDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.friendStorage = friendStorage;
     }
 
     @Override
     public Collection<User> findAll() {
         String sql = "SELECT * FROM USERS";
-        return Collections.unmodifiableCollection(jdbcTemplate.query(sql, this::mapRowToUser));
+        return jdbcTemplate.query(sql, this::mapRowToUser);
     }
 
     @Override
     public User getUser(Long id) {
         User user = null;
-        List<User> userList = jdbcTemplate.query("SELECT * FROM USERS WHERE USER_ID = ?", this::mapRowToUser, id);
+        String sql = "SELECT * FROM USERS WHERE USER_ID = ?";
+        List<User> userList = jdbcTemplate.query(sql, this::mapRowToUser, id);
         if (userList.size() != 0) {
             user = userList.get(0);
         }
@@ -49,9 +44,9 @@ public class UserDbStorage implements UserStorage {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("USERS")
                 .usingGeneratedKeyColumns("USER_ID");
-        user.setId(simpleJdbcInsert.executeAndReturnKey(user.toMap()).longValue());
-        log.info("Пользователь с ID = {} успешно добавлен.", user.getId());
-        return user;
+        Long id = simpleJdbcInsert.executeAndReturnKey(user.toMap()).longValue();
+        log.info("Пользователь с ID = {} успешно добавлен.", id);
+        return getUser(id);
 
     }
 
@@ -75,6 +70,53 @@ public class UserDbStorage implements UserStorage {
         }
     }
 
+    @Override
+    public void addFriend(Long userId, Long friendId) {
+        boolean status = false;
+        if (checkUserFriend(friendId, userId)) {
+            status = true;  // дружба стала взаимной
+            String sql = "UPDATE FRIENDS SET STATUS = ? WHERE USER_ID = ? AND FRIEND_ID = ?";
+            jdbcTemplate.update(sql, true, friendId, userId);
+        }
+        // добавлена заявка в друзья
+        String sql = "INSERT INTO FRIENDS (USER_ID, FRIEND_ID, STATUS) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sql, userId, friendId, status);
+    }
+
+    @Override
+    public void deleteFriend(Long userId, Long friendId) {
+        String sql = "DELETE FROM friends WHERE USER_ID = ? AND FRIEND_ID = ?";
+        jdbcTemplate.update(sql, userId, friendId);
+        if (checkUserFriend(friendId, userId)) {
+            // дружба стала невзаимной - нужно поменять статус
+            sql = "UPDATE FRIENDS SET STATUS = ? " +
+                    "WHERE USER_ID = ? AND FRIEND_ID = ?";
+            jdbcTemplate.update(sql, false, friendId, userId);
+        }
+    }
+
+    @Override
+    public List<User> getUserFriendsById(Long userId) {
+        String sql = "SELECT FRIEND_ID, U.* FROM FRIENDS AS F" +
+                " INNER JOIN USERS AS U ON F.FRIEND_ID = U.USER_ID WHERE F.USER_ID = ?";
+        return jdbcTemplate.query(sql, this::mapRowToUser, userId);
+    }
+
+    @Override
+    public List<User> getCommonFriends(Long id1, Long id2) {
+        final String q = "SELECT F.FRIEND_ID,U.* FROM (" +
+                "SELECT FRIEND_ID FROM FRIENDS WHERE USER_ID = ? INTERSECT " +
+                "SELECT FRIEND_ID FROM FRIENDS WHERE USER_ID = ?" +
+                ") F INNER JOIN USERS U ON F.FRIEND_ID = U.USER_ID";
+        return jdbcTemplate.query(q, this::mapRowToUser, id1, id2);
+    }
+
+    private boolean checkUserFriend(Long userId, Long friendId) {
+        String sql = "SELECT FRIEND_ID FROM FRIENDS WHERE USER_ID = ? AND FRIEND_ID = ?";
+        return jdbcTemplate.query(sql,
+                (rs, rowNum) -> rs.getLong("FRIEND_ID"), userId, friendId).size() > 0;
+    }
+
     public User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
         User user = new User();
         user.setId(rs.getLong("USER_ID"));
@@ -82,8 +124,6 @@ public class UserDbStorage implements UserStorage {
         user.setLogin(rs.getString("LOGIN"));
         user.setName(rs.getString("NAME"));
         user.setBirthday(rs.getDate("BIRTHDAY").toLocalDate());
-        user.setFriends(new HashSet<>(friendStorage.getUserFriendsIds(rs.getLong("USER_ID")))); // доделать
-
         return user;
     }
 }

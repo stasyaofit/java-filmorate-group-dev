@@ -41,63 +41,78 @@ class FilmorateApplicationTests {
     private Film firstFilm;
     private Film secondFilm;
     private Film thirdFilm;
+    private static final String FIRST_LOGIN = "Mr.First";
+    private static final String FIRST_NAME = "First";
+    private static final String FIRST_EMAIL = "1@ya.ru";
+    private static final String FIRST_FILM_NAME = "Босиком по мостовой";
+    private static final String SECOND_FILM_NAME = "Джон Уик";
+    private static final String THIRD_FILM_NAME = "Титаник";
+    private static final String UPD_NAME = "UpdateName";
+    private static final String UPD_DESCRIPTION = "Update Description";
+    private static final String DESCRIPTION = "Подробное описание";
+    private static final LocalDate TEST_DATE = LocalDate.of(1980, 12, 23);
+    private static final LocalDate UPD_TEST_DATE = LocalDate.of(2000, 12, 23);
+
 
     @BeforeEach
     public void beforeEach() {
         firstUser = new User();
-        firstUser.setEmail("1@ya.ru");
-        firstUser.setLogin("Mr.First");
-        firstUser.setName("First");
-        firstUser.setBirthday(LocalDate.of(1980, 12, 23));
+        firstUser.setEmail(FIRST_EMAIL);
+        firstUser.setLogin(FIRST_LOGIN);
+        firstUser.setName(FIRST_NAME);
+        firstUser.setBirthday(TEST_DATE);
 
         secondUser = new User();
         secondUser.setEmail("2@ya.ru");
         secondUser.setLogin("Mr.Second");
         secondUser.setName("Second");
-        secondUser.setBirthday(LocalDate.of(1990, 12, 24));
+        secondUser.setBirthday(TEST_DATE);
 
         thirdUser = new User();
         thirdUser.setEmail("3@ya.ru");
         thirdUser.setLogin("Mr.Third");
         thirdUser.setName("Third");
-        thirdUser.setBirthday(LocalDate.of(2000, 12, 25));
+        thirdUser.setBirthday(TEST_DATE);
 
         firstFilm = new Film();
-        firstFilm.setName("Босиком по мостовой");
-        firstFilm.setDescription("Подробное описание");
-        firstFilm.setReleaseDate(LocalDate.of(2005, 10, 5));
+        firstFilm.setName(FIRST_FILM_NAME);
+        firstFilm.setDescription(DESCRIPTION);
+        firstFilm.setReleaseDate(TEST_DATE);
         firstFilm.setDuration(100);
         firstFilm.setMpa(new Mpa(1, "G"));
         firstFilm.setGenres(new HashSet<>(Arrays.asList(new Genre(1, "Комедия"),
                 new Genre(2, "Драма"))));
 
         secondFilm = new Film();
-        secondFilm.setName("Джон Уик");
-        secondFilm.setDescription("Подробное описание");
+        secondFilm.setName(SECOND_FILM_NAME);
+        secondFilm.setDescription(DESCRIPTION);
         secondFilm.setReleaseDate(LocalDate.of(2015, 10, 5));
         secondFilm.setDuration(110);
         secondFilm.setMpa(new Mpa(5, "NC-17"));
         secondFilm.setGenres(new HashSet<>(List.of(new Genre(6, "Боевик"))));
 
         thirdFilm = new Film();
-        thirdFilm.setName("Титаник");
-        thirdFilm.setDescription("Подробное описание");
+        thirdFilm.setName(THIRD_FILM_NAME);
+        thirdFilm.setDescription(DESCRIPTION);
         thirdFilm.setReleaseDate(LocalDate.of(1992, 10, 5));
         thirdFilm.setDuration(130);
         thirdFilm.setMpa(new Mpa(4, "R"));
         thirdFilm.setGenres(new HashSet<>(List.of(new Genre(2, "Драма"))));
-
     }
 
     @Test
     public void testCreateUserAndGetUserById() {
         firstUser = userStorage.createUser(firstUser);
+        System.out.println(firstUser);
         Optional<User> userOptional = Optional.ofNullable(userStorage.getUser(firstUser.getId()));
         assertThat(userOptional)
                 .hasValueSatisfying(user ->
                         assertThat(user)
                                 .hasFieldOrPropertyWithValue("id", firstUser.getId())
-                                .hasFieldOrPropertyWithValue("login", "Mr.First"));
+                                .hasFieldOrPropertyWithValue("email", FIRST_EMAIL)
+                                .hasFieldOrPropertyWithValue("login", FIRST_LOGIN)
+                                .hasFieldOrPropertyWithValue("name", FIRST_NAME)
+                                .hasFieldOrPropertyWithValue("birthday", TEST_DATE));
     }
 
     @Test
@@ -114,15 +129,19 @@ class FilmorateApplicationTests {
         firstUser = userStorage.createUser(firstUser);
         User updateUser = new User();
         updateUser.setId(firstUser.getId());
-        updateUser.setEmail("1@ya.ru");
-        updateUser.setLogin("Mr.First");
-        updateUser.setName("updFirst");
-        updateUser.setBirthday(LocalDate.of(1980, 12, 23));
+        updateUser.setEmail(FIRST_EMAIL);
+        updateUser.setLogin(FIRST_LOGIN);
+        updateUser.setName(UPD_NAME);
+        updateUser.setBirthday(UPD_TEST_DATE);
 
         Optional<User> testUpdateUser = Optional.ofNullable(userStorage.updateUser(updateUser));
         assertThat(testUpdateUser)
                 .hasValueSatisfying(user -> assertThat(user)
-                        .hasFieldOrPropertyWithValue("name", "updFirst")
+                        .hasFieldOrPropertyWithValue("id", firstUser.getId())
+                        .hasFieldOrPropertyWithValue("email", FIRST_EMAIL)
+                        .hasFieldOrPropertyWithValue("login", FIRST_LOGIN)
+                        .hasFieldOrPropertyWithValue("name", UPD_NAME)
+                        .hasFieldOrPropertyWithValue("birthday", UPD_TEST_DATE)
                 );
     }
 
@@ -141,7 +160,12 @@ class FilmorateApplicationTests {
         assertThat(filmOptional)
                 .hasValueSatisfying(film -> assertThat(film)
                         .hasFieldOrPropertyWithValue("id", firstFilm.getId())
-                        .hasFieldOrPropertyWithValue("name", "Босиком по мостовой")
+                        .hasFieldOrPropertyWithValue("name", FIRST_FILM_NAME)
+                        .hasFieldOrPropertyWithValue("description", DESCRIPTION)
+                        .hasFieldOrPropertyWithValue("releaseDate", TEST_DATE)
+                        .hasFieldOrPropertyWithValue("duration", firstFilm.getDuration())
+                        .hasFieldOrPropertyWithValue("mpa", firstFilm.getMpa())
+
                 );
     }
 
@@ -161,19 +185,24 @@ class FilmorateApplicationTests {
         firstFilm = filmStorage.createFilm(firstFilm);
         Film updateFilm = new Film();
         updateFilm.setId(firstFilm.getId());
-        updateFilm.setName("UpdateName");
-        updateFilm.setDescription("UpdateDescription");
-        updateFilm.setReleaseDate(LocalDate.of(2015, 10, 5));
+        updateFilm.setName(UPD_NAME);
+        updateFilm.setDescription(UPD_DESCRIPTION);
+        updateFilm.setReleaseDate(UPD_TEST_DATE);
         updateFilm.setDuration(110);
         updateFilm.setMpa(new Mpa(1, "G"));
-        secondFilm.setGenres(new HashSet<>(List.of(new Genre(6, "Боевик"))));
+        updateFilm.setGenres(new HashSet<>(List.of(new Genre(6, "Боевик"))));
 
         Optional<Film> testUpdateFilm = Optional.ofNullable(filmStorage.updateFilm(updateFilm));
         assertThat(testUpdateFilm)
                 .hasValueSatisfying(film ->
                         assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "UpdateName")
-                                .hasFieldOrPropertyWithValue("description", "UpdateDescription")
+                                .hasFieldOrPropertyWithValue("id", updateFilm.getId())
+                                .hasFieldOrPropertyWithValue("name", UPD_NAME)
+                                .hasFieldOrPropertyWithValue("description", UPD_DESCRIPTION)
+                                .hasFieldOrPropertyWithValue("releaseDate", UPD_TEST_DATE)
+                                .hasFieldOrPropertyWithValue("duration", updateFilm.getDuration())
+                                .hasFieldOrPropertyWithValue("mpa", updateFilm.getMpa())
+                                .hasFieldOrPropertyWithValue("genres", updateFilm.getGenres())
                 );
     }
 
@@ -190,7 +219,7 @@ class FilmorateApplicationTests {
         firstUser = userStorage.createUser(firstUser);
         firstFilm = filmStorage.createFilm(firstFilm);
         filmService.addLike(firstFilm.getId(), firstUser.getId());
-        firstFilm = filmStorage.getFilm(firstFilm.getId());
+        firstFilm = filmService.getFilmById(firstFilm.getId());
         assertThat(firstFilm.getLikes()).hasSize(1);
         assertThat(firstFilm.getLikes()).contains(firstUser.getId());
     }
@@ -203,7 +232,7 @@ class FilmorateApplicationTests {
         filmService.addLike(firstFilm.getId(), firstUser.getId());
         filmService.addLike(firstFilm.getId(), secondUser.getId());
         filmService.removeLike(firstFilm.getId(), firstUser.getId());
-        firstFilm = filmStorage.getFilm(firstFilm.getId());
+        firstFilm = filmService.getFilmById(firstFilm.getId());
         assertThat(firstFilm.getLikes()).hasSize(1);
         assertThat(firstFilm.getLikes()).contains(secondUser.getId());
     }
@@ -228,23 +257,24 @@ class FilmorateApplicationTests {
         filmService.addLike(thirdFilm.getId(), secondUser.getId());
 
         List<Film> listFilms = filmService.getTopNPopularFilms(5L);
+        System.out.println(listFilms);
 
         assertThat(listFilms).hasSize(3);
 
         assertThat(Optional.of(listFilms.get(0)))
                 .hasValueSatisfying(film ->
                         AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "Джон Уик"));
+                                .hasFieldOrPropertyWithValue("name", SECOND_FILM_NAME));
 
         assertThat(Optional.of(listFilms.get(1)))
                 .hasValueSatisfying(film ->
                         AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "Титаник"));
+                                .hasFieldOrPropertyWithValue("name", THIRD_FILM_NAME));
 
         assertThat(Optional.of(listFilms.get(2)))
                 .hasValueSatisfying(film ->
                         AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", "Босиком по мостовой"));
+                                .hasFieldOrPropertyWithValue("name", FIRST_FILM_NAME));
     }
 
     @Test
