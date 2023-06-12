@@ -45,9 +45,10 @@ public class FilmService {
     public Film createFilm(Film film) {
         checkFilmReleaseDate(film);
         Film createdFilm = filmStorage.createFilm(film);
-        if (createdFilm.getGenres() != null) {
-            film.getGenres().forEach(genre -> genreService.addGenreToFilm(film.getId(), genre.getId()));
+        if (film.getGenres() != null) {
+            film.getGenres().forEach(genre -> genreService.addGenreToFilm(createdFilm.getId(), genre.getId()));
         }
+        updateGenresByFilm(createdFilm);
         log.info("Добавили фильм: {}", createdFilm.getName());
         return createdFilm;
     }
