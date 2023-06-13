@@ -34,8 +34,6 @@ public class User {
     @PastOrPresent(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
 
-    private Set<Long> friends = new HashSet<>();
-
     public Map<String, Object> toMap() {
         Map<String, Object> values = new HashMap<>();
         values.put("email", email);
@@ -44,5 +42,4 @@ public class User {
         values.put("birthday", birthday);
         return values;
     }
-
 }

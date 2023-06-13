@@ -28,16 +28,4 @@ public class GenreService {
         }
         return genre;
     }
-
-    public void addGenreToFilm(Long filmId, Integer genreId) {
-        genreStorage.addGenreToFilm(filmId, genreId);
-    }
-
-    public void deleteGenresFromFilm(Long filmId) {
-        genreStorage.deleteGenresFromFilm(filmId);
-    }
-
-    public Map<Long, Set<Genre>> getGenreMap(List<Long> ids) {
-        return genreStorage.getGenreMap(ids);
-    }
 }

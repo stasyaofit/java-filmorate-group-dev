@@ -7,8 +7,6 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 @Service
 public class MpaService {
@@ -29,9 +27,5 @@ public class MpaService {
             throw new MpaNotFoundException("Рейтинг с ID = " + id + " не найден.");
         }
         return mpa;
-    }
-
-    public Map<Long, Mpa> getMpaMap(List<Long> ids) {
-        return mpaStorage.getMpaMap(ids);
     }
 }

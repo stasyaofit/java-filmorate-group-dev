@@ -3,6 +3,9 @@ package ru.yandex.practicum.filmorate.storage.film;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -10,18 +13,18 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Repository("filmDbStorage")
 @Slf4j
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Autowired
-    public FilmDbStorage(JdbcTemplate jdbcTemplate) {
+    public FilmDbStorage(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
     @Override
@@ -37,9 +40,6 @@ public class FilmDbStorage implements FilmStorage {
         List<Film> filmList = jdbcTemplate.query(sql, this::mapRowToFilm, id);
         if (filmList.size() != 0) {
             film = filmList.get(0);
-            if (film.getGenres() == null) {
-                film.setGenres(Collections.emptySet());
-            }
         }
         return film;
     }
@@ -87,9 +87,19 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Long> getLikes(Long filmId) {
-        String sql = "SELECT USER_ID FROM FILM_LIKES WHERE FILM_ID = ? ORDER BY USER_ID";
-        return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getLong("USER_ID"), filmId);
+    public Map<Long, Set<Long>> getLikeMap(List<Long> ids) {
+        String sql = "SELECT FILM_ID, USER_ID FROM FILM_LIKES WHERE FILM_ID IN (:ids)";
+        SqlParameterSource parameters = new MapSqlParameterSource("ids", ids);
+        final Map<Long, Set<Long>> likeMap = new HashMap<>();
+
+        namedParameterJdbcTemplate.query(sql, parameters, rs -> {
+            Long filmId = rs.getLong("FILM_ID");
+            Long likeId = rs.getLong("USER_ID");
+            Set<Long> likes = likeMap.getOrDefault(filmId, new HashSet<>());
+            likes.add(likeId);
+            likeMap.put(filmId, likes);
+        });
+        return likeMap;
     }
 
     @Override

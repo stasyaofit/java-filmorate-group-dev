@@ -12,6 +12,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
@@ -22,52 +24,42 @@ import java.util.*;
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-    private final MpaService mpaService;
-    private final GenreService genreService;
+    private final MpaStorage mpaStorage;
+    private final GenreStorage genreStorage;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
                        @Qualifier("userDbStorage") UserStorage userStorage,
-                       MpaService mpaService, GenreService genreService) {
+                       MpaStorage mpaStorage, GenreStorage genreStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
-        this.mpaService = mpaService;
-        this.genreService = genreService;
+        this.mpaStorage = mpaStorage;
+        this.genreStorage = genreStorage;
     }
 
     public Collection<Film> findAll() {
         Collection<Film> films = filmStorage.findAll();
-        updateGenreAndMpa((List<Film>) films);
-        updateLikes((List<Film>) films);
+        updateGenreAndMpaAndLike(films);
         return films;
     }
 
     public Film createFilm(Film film) {
         checkFilmReleaseDate(film);
-        Film createdFilm = filmStorage.createFilm(film);
-        if (film.getGenres() != null) {
-            film.getGenres().forEach(genre -> genreService.addGenreToFilm(createdFilm.getId(), genre.getId()));
-        }
-        updateGenresByFilm(createdFilm);
-        log.info("Добавили фильм: {}", createdFilm.getName());
-        return createdFilm;
+        Long filmId = filmStorage.createFilm(film).getId();
+        film.getGenres().forEach(genre -> genreStorage.addGenreToFilm(filmId, genre.getId()));
+        film.setId(filmId);
+        log.info("Добавили фильм: {}", film.getName());
+        return film;
     }
 
     public Film updateFilm(Film film) {
         checkFilmReleaseDate(film);
         checkFilmId(film.getId());
         filmStorage.updateFilm(film);
-        if (film.getGenres() != null) {
-            genreService.deleteGenresFromFilm(film.getId());
-            Set<Genre> genres = film.getGenres();
-            genres.forEach(genre -> genreService.addGenreToFilm(film.getId(), genre.getId()));
-            genres.clear();
-            updateGenresByFilm(film);
-        }
-        if (film.getMpa() != null) {
-            film.setMpa(mpaService.getMpaById(film.getMpa().getId()));
-        }
-        updateFilmLikes(film);
+        genreStorage.deleteGenresFromFilm(film.getId());
+        film.getGenres().forEach(genre -> genreStorage.addGenreToFilm(film.getId(), genre.getId()));
+        updateGenreAndMpaAndLike(List.of(film));
+
         log.info("Обновлен фильм c id = {}", film.getId());
         return film;
     }
@@ -82,11 +74,7 @@ public class FilmService {
         if (film == null) {
             throw new FilmNotFoundException("Фильм с ID = " + id + " не найден.");
         }
-        updateGenresByFilm(film);
-        updateFilmLikes(film);
-        if (film.getMpa() != null) {
-            film.setMpa(mpaService.getMpaById(film.getMpa().getId()));
-        }
+        updateGenreAndMpaAndLike(List.of(film));
         return film;
     }
 
@@ -117,8 +105,7 @@ public class FilmService {
             throw new IncorrectParameterException("count");
         }
         List<Film> films = filmStorage.getTopNPopularFilms(count);
-        updateGenreAndMpa(films);
-        updateLikes(films);
+        updateGenreAndMpaAndLike(films);
         return films;
     }
 
@@ -140,44 +127,28 @@ public class FilmService {
         }
     }
 
-    private void updateGenresByFilm(Film film) {
-        List<Long> filmIds = new ArrayList<>();
-        filmIds.add(film.getId());
-        Map<Long, Set<Genre>> genreMap = genreService.getGenreMap(filmIds);
-        if (genreMap.get(film.getId()) != null) {
-            film.setGenres(genreMap.get(film.getId()));
-        }
-    }
-
-    private void updateFilmLikes(Film film) {
-        List<Long> likes = filmStorage.getLikes(film.getId());
-        film.setLikes(new HashSet<>(likes));
-    }
-
-    private void updateLikes(List<Film> films) {
-        for (Film film : films) {
-            updateFilmLikes(film);
-        }
-    }
-
-    private void updateGenreAndMpa(List<Film> films) {
+    private void updateGenreAndMpaAndLike(Collection<Film> films) {
         List<Long> filmIds = new ArrayList<>();
         for (Film film : films) {
             filmIds.add(film.getId());
         }
-        Map<Long, Set<Genre>> genres = genreService.getGenreMap(filmIds);
-        Map<Long, Mpa> mpa = mpaService.getMpaMap(filmIds);
+        Map<Long, Set<Genre>> genres = genreStorage.getGenreMap(filmIds);
+        Map<Long, Mpa> mpaMap = mpaStorage.getMpaMap(filmIds);
+        Map<Long, Set<Long>> likes = filmStorage.getLikeMap(filmIds);
         filmIds.clear();
-        if (films.size() != 0) {
-            for (Film film : films) {
-                if (genres.get(film.getId()) != null) {
-                    film.setGenres(genres.get(film.getId()));
-                }
-                if (mpa.get(film.getId()) != null) {
-                    film.setMpa(mpa.get(film.getId()));
-                }
+        for (Film film : films) {
+            Set<Genre> genreSet = genres.get(film.getId());
+            Mpa mpa = mpaMap.get(film.getId());
+            Set<Long> likeSet = likes.get(film.getId());
+            if (genreSet != null) {
+                film.setGenres(genreSet);
+            }
+            if (mpa != null) {
+                film.setMpa(mpa);
+            }
+            if (likeSet != null) {
+                film.setLikes(likeSet);
             }
         }
     }
-
 }

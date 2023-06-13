@@ -34,7 +34,8 @@ public class MpaDbStorage implements MpaStorage {
     @Override
     public Mpa getMpa(Integer id) {
         Mpa mpa = null;
-        List<Mpa> mpaList = jdbcTemplate.query("SELECT * FROM MPA_RATINGS WHERE RATING_ID = ?", this::mapRowToMpa, id);
+        List<Mpa> mpaList = jdbcTemplate.query("SELECT * FROM MPA_RATINGS WHERE RATING_ID = ?",
+                this::mapRowToMpa, id);
         if (mpaList.size() != 0) {
             mpa = mpaList.get(0);
         }
@@ -43,8 +44,9 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public Map<Long, Mpa> getMpaMap(List<Long> ids) {
-        String sql = "SELECT F.*, MR.RATING_NAME "
-                + "FROM FILMS AS F LEFT JOIN MPA_RATINGS AS MR ON F.RATING_ID = MR.RATING_ID IN (:ids)";
+        String sql = "SELECT F.* , MR.RATING_NAME FROM FILMS AS F " +
+                "LEFT JOIN MPA_RATINGS AS MR ON F.RATING_ID = MR.RATING_ID " +
+                "WHERE FILM_ID IN (:ids)";
         MapSqlParameterSource parameters = new MapSqlParameterSource("ids", ids);
         final Map<Long, Mpa> mpaMap = new HashMap<>();
 

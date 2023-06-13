@@ -117,7 +117,7 @@ public class UserDbStorage implements UserStorage {
                 (rs, rowNum) -> rs.getLong("FRIEND_ID"), userId, friendId).size() > 0;
     }
 
-    public User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
+    private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
         User user = new User();
         user.setId(rs.getLong("USER_ID"));
         user.setEmail(rs.getString("EMAIL"));
