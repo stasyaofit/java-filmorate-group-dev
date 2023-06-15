@@ -59,6 +59,13 @@ public class UserController {
         userService.removeFriend(id, friendId);
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable Long id) {
+        log.info("Получен DELETE-запрос к эндпоинту: '/users' на удаление пользователя с ID={}", id);
+        userService.deleteUser(id);
+    }
+
+
     @GetMapping("/{id}/friends")
     public List<User> getUserFriendsById(@PathVariable Long id) {
         log.info("Получен GET-запрос к эндпоинту '/users/{id}/friends' на получение " +
