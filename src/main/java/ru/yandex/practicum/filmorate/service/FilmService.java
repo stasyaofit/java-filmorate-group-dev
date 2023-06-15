@@ -93,10 +93,9 @@ public class FilmService {
         checkUserId(userId);
         log.info("Пользователь(id = {}) хочет отменить лайк фильму c id: {} .", userId, filmId);
         Film film = getFilmById(filmId);
-        if (film.getLikes().contains(userId)) {
-            filmStorage.removeLike(filmId, userId);
-            log.info("Лайк фильму {} успешно удалён.", film.getName());
-        }
+        filmStorage.removeLike(filmId, userId);
+        log.info("Лайк фильму {} успешно удалён.", film.getName());
+
     }
 
     public List<Film> getTopNPopularFilms(Long count) {
