@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.exception.*;
+import ru.yandex.practicum.filmorate.model.ErrorMessage;
 
 @RestControllerAdvice("ru.yandex.practicum.filmorate")
 @Slf4j
@@ -65,11 +66,16 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleThrowable(final Throwable e) {
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse reviewNotFoundException(final ReviewNotFoundException e) {
         log.error(e.getMessage());
-        return new ErrorResponse(
-                "Произошла непредвиденная ошибка."
-        );
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler({Exception.class})
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorMessage handleOtherExceptions(final Exception e) {
+        log.error(e.getMessage());
+        return new ErrorMessage(e.getMessage());
     }
 }
