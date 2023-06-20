@@ -57,9 +57,8 @@ public class FilmService {
         checkFilmReleaseDate(film);
         Long filmId = filmStorage.createFilm(film).getId();
         film.getGenres().forEach(genre -> genreStorage.addGenreToFilm(filmId, genre.getId()));
-        film.setId(filmId);
         log.info("Добавили фильм: {}", film.getName());
-        return film;
+        return getFilmById(filmId);
     }
 
     public Film updateFilm(Film film) {
@@ -68,10 +67,9 @@ public class FilmService {
         filmStorage.updateFilm(film);
         genreStorage.deleteGenresFromFilm(film.getId());
         film.getGenres().forEach(genre -> genreStorage.addGenreToFilm(film.getId(), genre.getId()));
-        updateGenreAndMpaAndLike(List.of(film));
 
         log.info("Обновлен фильм c id = {}", film.getId());
-        return film;
+        return getFilmById(film.getId());
     }
 
     public void deleteFilm(Long id) {
