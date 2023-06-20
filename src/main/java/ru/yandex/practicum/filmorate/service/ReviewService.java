@@ -48,27 +48,32 @@ public class ReviewService {
             throw new IncorrectParameterException("count");
         }
         checkFilmId(filmId);
-        return reviewStorage.getTopNReviewsByFilmId(filmId,count);
+        return reviewStorage.getTopNReviewsByFilmId(filmId, count);
     }
 
     public Review createReview(Review review) {
+        checkFilmId(review.getFilmId());
+        checkUserId(review.getUserId());
+        if (review.getIsPositive() == null) {
+            throw new IncorrectParameterException("Тип отзыва не может быть пустым");
+        }
         Long reviewId = reviewStorage.createReview(review).getReviewId();
         review.setReviewId(reviewId);
         log.info("Добавили отзыв: {}", review);
-        return review;
+        return getReviewById(reviewId);
     }
 
     public Review updateReview(Review review) {
         checkReviewId(review.getReviewId());
         checkFilmId(review.getFilmId());
-        checkUserId(review.getReviewId());
+        checkUserId(review.getUserId());
         reviewStorage.updateReview(review);
         log.info("Обновлен отзыв c id = {}", review.getReviewId());
-        return review;
+        return getReviewById(review.getReviewId());
     }
 
     public void deleteReview(Long reviewId) {
-        log.info("Удален отзыв c id = {}",reviewId);
+        log.info("Удален отзыв c id = {}", reviewId);
         reviewStorage.deleteReview(reviewId);
     }
 
@@ -83,28 +88,28 @@ public class ReviewService {
     public void addLike(Long reviewId, Long userId) {
         checkReviewId(userId);
         checkUserId(userId);
-        reviewStorage.addLike(reviewId,userId);
+        reviewStorage.addLike(reviewId, userId);
         log.info("Пользователь(id = {}) поставил лайк отзыву c id: {} .", userId, reviewId);
     }
 
     public void addDislike(Long reviewId, Long userId) {
         checkReviewId(userId);
         checkUserId(userId);
-        reviewStorage.addDislike(reviewId,userId);
+        reviewStorage.addDislike(reviewId, userId);
         log.info("Пользователь(id = {}) поставил дизлайк отзыву c id: {} .", userId, reviewId);
     }
 
     public void removeLike(Long reviewId, Long userId) {
         checkReviewId(userId);
         checkUserId(userId);
-        reviewStorage.removeLike(reviewId,userId);
+        reviewStorage.removeLike(reviewId, userId);
         log.info("Пользователь(id = {}) удалил лайк отзыву c id: {} .", userId, reviewId);
     }
 
     public void removeDislike(Long reviewId, Long userId) {
         checkReviewId(userId);
         checkUserId(userId);
-        reviewStorage.removeDislike(reviewId,userId);
+        reviewStorage.removeDislike(reviewId, userId);
         log.info("Пользователь(id = {}) удалил дизлайк отзыву c id: {} .", userId, reviewId);
     }
 

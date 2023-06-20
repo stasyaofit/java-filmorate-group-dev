@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.service.ReviewService;
 
@@ -40,11 +39,11 @@ public class ReviewController {
     }
 
     @GetMapping
-    public Collection<Review> getRewiews(
-            @RequestParam(name = "filmId", required = false) Long filmId,
-            @RequestParam(name = "count", required = false, defaultValue = "10L") Long count) {
-        if (filmId == null){
-            log.info("Получен GET-запрос к эндпоинту '/reviews' на получение {} отзывов.",count.toString());
+    public Collection<Review> getReviews(
+            @RequestParam(value = "filmId", required = false) Long filmId,
+            @RequestParam(value = "count", required = false, defaultValue = "10") Long count) {
+        if (filmId == null) {
+            log.info("Получен GET-запрос к эндпоинту '/reviews' на получение {} отзывов.", count.toString());
             return reviewService.findTopNReviews(count);
         }
         log.info("Получен GET-запрос к эндпоинту '/reviews' на получение {} отзывов для фильма c id = {}.",
@@ -85,5 +84,4 @@ public class ReviewController {
                 " Пользователь с ID {} удаляет дизлайк отзыву с ID {}.", userId, id);
         reviewService.removeDislike(id, userId);
     }
-
 }

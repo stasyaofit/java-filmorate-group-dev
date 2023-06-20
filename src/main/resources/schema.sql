@@ -1,3 +1,5 @@
+DROP ALL OBJECTS;
+
 create table if not exists USERS
 (
     USER_ID  BIGINT auto_increment,
@@ -82,6 +84,7 @@ create table if not exists REVIEWS
     CONTENT CHARACTER VARYING(200) not null,
     FILM_ID BIGINT not null,
     USER_ID BIGINT not null,
+    IS_POSITIVE BOOLEAN,
     constraint REVIEWS_PK
         primary key (REVIEW_ID),
     constraint "reviews_FILMS_FILM_ID_fk"

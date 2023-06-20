@@ -20,24 +20,20 @@ public class Review {
     @NotBlank(message = "Название не может быть пустым")
     private String content;
 
-    private boolean isPositive;
+    private Boolean isPositive;
 
-    @NotBlank(message = "Автор отзыва не может быть пустым")
     private Long userId;
 
-    @NotBlank(message = "Фильм не может быть пустым")
     private Long filmId;
 
     private Long useful;
 
     public Map<String, Object> toMap() {
         Map<String, Object> values = new HashMap<>();
-        values.put("reviewId", reviewId);
         values.put("content", content);
-        values.put("isPositive", isPositive);
-        values.put("userId", userId);
-        values.put("filmId", filmId);
-        values.put("useful", useful);
+        values.put("is_Positive", isPositive);
+        values.put("user_Id", userId);
+        values.put("film_Id", filmId);
         return values;
     }
 }

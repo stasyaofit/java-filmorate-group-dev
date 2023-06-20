@@ -6,8 +6,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.sql.ResultSet;
@@ -16,7 +14,7 @@ import java.util.List;
 
 @Repository("reviewDbStorage")
 @Slf4j
-public class ReviewDbStorage implements ReviewStorage{
+public class ReviewDbStorage implements ReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -33,37 +31,42 @@ public class ReviewDbStorage implements ReviewStorage{
                 .withTableName("REVIEWS")
                 .usingGeneratedKeyColumns("REVIEW_ID");
         Long id = simpleJdbcInsert.executeAndReturnKey(review.toMap()).longValue();
+        review.setReviewId(id);
         log.info("Отзыв с ID = {} успешно добавлен.", id);
-        return getReview(id);
+        return review;
     }
 
     @Override
     public List<Review> getTopNReviews(Long count) {
-        String getPopularQuery = "R.*, L.RATING as USEFUL "
-                + "FROM REVIEWS AS R "
-                + "LEFT JOIN (SELECT REVIEW_ID,SUM(LIKE_RATING) as RATING FROM REVIEW_LIKES GROUP BY REVIEW_ID) L "
-                + "ORDER BY L.RATING DESC LIMIT ?";
+        String getPopularQuery = "SELECT REVIEWS.*, COALESCE(SUM(LIKE_RATING),0) as USEFUL "
+                + "FROM REVIEWS "
+                + "LEFT JOIN REVIEW_LIKES L ON REVIEWS.REVIEW_ID = L.REVIEW_ID "
+                + "GROUP BY REVIEWS.REVIEW_ID "
+                + "ORDER BY USEFUL DESC "
+                + "LIMIT ?";
         return jdbcTemplate.query(getPopularQuery, this::mapRowToReview, count);
     }
 
     @Override
     public List<Review> getTopNReviewsByFilmId(Long filmId, Long count) {
-        String getPopularQuery = "R.*, L.RATING as USEFUL "
-                + "FROM REVIEWS AS R "
-                + "LEFT JOIN (SELECT REVIEW_ID,SUM(LIKE_RATING) as RATING FROM REVIEW_LIKES GROUP BY REVIEW_ID) L "
-                + "WHERE FILM_ID = ? "
-                + "ORDER BY L.RATING DESC LIMIT ?";
+        String getPopularQuery = "SELECT REVIEWS.*, COALESCE(SUM(LIKE_RATING),0) as USEFUL "
+                + "FROM REVIEWS "
+                + "LEFT JOIN REVIEW_LIKES L ON REVIEWS.REVIEW_ID = L.REVIEW_ID "
+                + "WHERE REVIEWS.FILM_ID = ? "
+                + "GROUP BY REVIEWS.REVIEW_ID "
+                + "ORDER BY USEFUL DESC "
+                + "LIMIT ?";
         return jdbcTemplate.query(getPopularQuery, this::mapRowToReview, filmId, count);
     }
 
     @Override
     public Review getReview(Long reviewId) {
         Review review = null;
-        String sql = "SELECT REVIEWS.*, L.RATING as USEFUL "
-                + "ROM REVIEWS "
-                + "LEFT JOIN (SELECT REVIEW_ID,SUM(LIKE_RATING) as RATING FROM REVIEW_LIKES GROUP BY REVIEW_ID) L "
-                + "on L.REVIEW_ID = REVIEWS.REVIEW_ID "
-                + "WHERE REVIEW_ID = ?";
+        String sql = "SELECT REVIEWS.*, SUM(LIKE_RATING) as USEFUL "
+                + "FROM REVIEWS "
+                + "LEFT JOIN REVIEW_LIKES L ON REVIEWS.REVIEW_ID = L.REVIEW_ID "
+                + "WHERE REVIEWS.REVIEW_ID = ? "
+                + "GROUP BY REVIEWS.REVIEW_ID ";
         List<Review> reviewList = jdbcTemplate.query(sql, this::mapRowToReview, reviewId);
         if (reviewList.size() != 0) {
             review = reviewList.get(0);
@@ -74,8 +77,12 @@ public class ReviewDbStorage implements ReviewStorage{
     @Override
     public Review updateReview(Review review) {
         String sqlQuery = "UPDATE REVIEWS "
-                + "SET CONTENT = ?, FILM_ID = ?, USER_ID = ? WHERE FILM_ID = ?";
-        if (jdbcTemplate.update(sqlQuery, review.getContent(), review.getFilmId(), review.getUserId(),
+                + "SET CONTENT = ?, FILM_ID = ?, USER_ID = ?, IS_POSITIVE = ? WHERE FILM_ID = ?";
+        if (jdbcTemplate.update(sqlQuery,
+                review.getContent(),
+                review.getFilmId(),
+                review.getUserId(),
+                review.getIsPositive(),
                 review.getReviewId()) != 0) {
             return review;
         } else {
@@ -124,6 +131,7 @@ public class ReviewDbStorage implements ReviewStorage{
         review.setContent(rs.getString("CONTENT"));
         review.setFilmId(rs.getLong("FILM_ID"));
         review.setUserId(rs.getLong("USER_ID"));
+        review.setIsPositive(rs.getBoolean("IS_POSITIVE"));
         review.setUseful(rs.getLong("USEFUL"));
         return review;
     }
