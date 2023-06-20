@@ -9,6 +9,9 @@ import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.ReviewNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
+import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -25,13 +28,17 @@ public class ReviewService {
 
     private final FilmStorage filmStorage;
 
+    private final FeedStorage feedStorage;
+
     @Autowired
     public ReviewService(@Qualifier("reviewDbStorage") ReviewStorage reviewStorage,
             @Qualifier("userDbStorage") UserStorage userStorage,
-            @Qualifier("filmDbStorage") FilmStorage filmStorage) {
+            @Qualifier("filmDbStorage") FilmStorage filmStorage,
+            @Qualifier("feedDbStorage") FeedStorage feedStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.reviewStorage = reviewStorage;
+        this.feedStorage = feedStorage;
     }
 
     public Collection<Review> findTopNReviews(Long count) {
@@ -60,21 +67,29 @@ public class ReviewService {
         Long reviewId = reviewStorage.createReview(review).getReviewId();
         review.setReviewId(reviewId);
         log.info("Добавили отзыв: {}", review);
+        feedStorage.addFeed(reviewId, review.getUserId(), EventType.REVIEW, Operation.ADD);
         return getReviewById(reviewId);
     }
 
     public Review updateReview(Review review) {
-        checkReviewId(review.getReviewId());
+        Long reviewId = review.getReviewId();
+        Long userId = review.getUserId();
+        checkReviewId(reviewId);
         checkFilmId(review.getFilmId());
-        checkUserId(review.getUserId());
+        checkUserId(userId);
         reviewStorage.updateReview(review);
-        log.info("Обновлен отзыв c id = {}", review.getReviewId());
-        return getReviewById(review.getReviewId());
+        log.info("Обновлен отзыв c id = {}", reviewId);
+        feedStorage.addFeed(reviewId, userId, EventType.REVIEW, Operation.UPDATE);
+        return getReviewById(reviewId);
     }
 
     public void deleteReview(Long reviewId) {
-        log.info("Удален отзыв c id = {}", reviewId);
+        checkReviewId(reviewId);
+        Long userId = getReviewById(reviewId).getUserId();
         reviewStorage.deleteReview(reviewId);
+        log.info("Удален отзыв c id = {}", reviewId);
+        checkUserId(userId);
+        feedStorage.addFeed(reviewId, userId, EventType.REVIEW, Operation.REMOVE);
     }
 
     public Review getReviewById(Long reviewId) {
