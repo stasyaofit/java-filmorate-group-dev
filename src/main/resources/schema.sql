@@ -76,6 +76,33 @@ create table if not exists FRIENDS
         foreign key (FRIEND_ID) references USERS ON DELETE CASCADE
 );
 
+create table if not exists REVIEWS
+(
+    REVIEW_ID          BIGINT auto_increment,
+    CONTENT CHARACTER VARYING(200) not null,
+    FILM_ID BIGINT not null,
+    USER_ID BIGINT not null,
+    constraint REVIEWS_PK
+        primary key (REVIEW_ID),
+    constraint "reviews_FILMS_FILM_ID_fk"
+        foreign key (FILM_ID) references FILMS ON DELETE CASCADE,
+    constraint "reviews_USERS_USER_ID_fk"
+        foreign key (USER_ID) references USERS ON DELETE CASCADE
+);
+
+create table if not exists REVIEW_LIKES
+(
+    REVIEW_ID BIGINT not null,
+    USER_ID BIGINT not null,
+    LIKE_RATING BIGINT not null,
+    constraint REVIEW_LIKES_PK
+        primary key (REVIEW_ID, USER_ID),
+    constraint "review_likes_REVIEWS_REVIEW_ID_fk"
+        foreign key (REVIEW_ID) references REVIEWS ON DELETE CASCADE,
+    constraint "review_likes_USERS_USER_ID_fk"
+        foreign key (USER_ID) references USERS ON DELETE CASCADE
+);
+
 
 
 
