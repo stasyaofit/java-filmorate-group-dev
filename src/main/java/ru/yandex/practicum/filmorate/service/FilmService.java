@@ -29,8 +29,8 @@ public class FilmService {
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       @Qualifier("userDbStorage") UserStorage userStorage,
-                       MpaStorage mpaStorage, GenreStorage genreStorage) {
+            @Qualifier("userDbStorage") UserStorage userStorage,
+            MpaStorage mpaStorage, GenreStorage genreStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.mpaStorage = mpaStorage;
@@ -95,7 +95,6 @@ public class FilmService {
         Film film = getFilmById(filmId);
         filmStorage.removeLike(filmId, userId);
         log.info("Лайк фильму {} успешно удалён.", film.getName());
-
     }
 
     public List<Film> getTopNPopularFilms(Long count) {

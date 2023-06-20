@@ -39,14 +39,14 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     @Override
-    public void addGenreToFilm(Long filmId, Integer genreId) {
-        jdbcTemplate.update("INSERT INTO FILM_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)",
-                filmId, genreId);
+    public void deleteGenresFromFilm(Long filmId) {
+        jdbcTemplate.update("DELETE FROM FILM_GENRES WHERE FILM_ID = ?", filmId);
     }
 
     @Override
-    public void deleteGenresFromFilm(Long filmId) {
-        jdbcTemplate.update("DELETE FROM FILM_GENRES WHERE FILM_ID = ?", filmId);
+    public void addGenreToFilm(Long filmId, Integer genreId) {
+        jdbcTemplate.update("INSERT INTO FILM_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)",
+                filmId, genreId);
     }
 
     @Override

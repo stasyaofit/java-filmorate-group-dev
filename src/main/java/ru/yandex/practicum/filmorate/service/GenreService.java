@@ -6,7 +6,7 @@ import ru.yandex.practicum.filmorate.exception.GenreNotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 
-import java.util.*;
+import java.util.Collection;
 
 @Service
 public class GenreService {

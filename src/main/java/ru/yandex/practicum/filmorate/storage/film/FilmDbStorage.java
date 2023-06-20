@@ -87,6 +87,15 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getTopNPopularFilms(Long count) {
+        String getPopularQuery =
+                "SELECT F.FILM_ID, F.FILM_NAME, F.DESCRIPTION, F.RELEASE_DATE, F.DURATION, F.RATING_ID " +
+                        "FROM FILMS AS F LEFT JOIN FILM_LIKES FL ON F.FILM_ID = FL.FILM_ID " +
+                        "GROUP BY F.FILM_ID ORDER BY COUNT(FL.USER_ID) DESC LIMIT ?";
+        return jdbcTemplate.query(getPopularQuery, this::mapRowToFilm, count);
+    }
+
+    @Override
     public Map<Long, Set<Long>> getLikeMap(List<Long> ids) {
         String sql = "SELECT FILM_ID, USER_ID FROM FILM_LIKES WHERE FILM_ID IN (:ids)";
         SqlParameterSource parameters = new MapSqlParameterSource("ids", ids);
@@ -100,14 +109,6 @@ public class FilmDbStorage implements FilmStorage {
             likeMap.put(filmId, likes);
         });
         return likeMap;
-    }
-
-    @Override
-    public List<Film> getTopNPopularFilms(Long count) {
-        String getPopularQuery = "SELECT F.FILM_ID, F.FILM_NAME, F.DESCRIPTION, F.RELEASE_DATE, F.DURATION, F.RATING_ID " +
-                "FROM FILMS AS F LEFT JOIN FILM_LIKES FL ON F.FILM_ID = FL.FILM_ID " +
-                "GROUP BY F.FILM_ID ORDER BY COUNT(FL.USER_ID) DESC LIMIT ?";
-        return jdbcTemplate.query(getPopularQuery, this::mapRowToFilm, count);
     }
 
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
