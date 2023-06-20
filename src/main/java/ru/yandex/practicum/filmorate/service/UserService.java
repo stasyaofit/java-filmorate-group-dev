@@ -52,7 +52,6 @@ public class UserService {
         checkUserId(friendId);
         userStorage.deleteFriend(id, friendId);
         log.info("Пользователь(id = {}) удалён из друзей.", friendId);
-
     }
 
     public User getUserById(Long id) {

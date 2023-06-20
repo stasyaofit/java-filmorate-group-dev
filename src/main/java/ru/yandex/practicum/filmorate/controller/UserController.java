@@ -71,7 +71,6 @@ public class UserController {
         log.info("Получен GET-запрос к эндпоинту '/users/{id}/friends' на получение " +
                 "списка друзей пользователя с ID = {}.", id);
         return userService.getUserFriendsById(id);
-
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")

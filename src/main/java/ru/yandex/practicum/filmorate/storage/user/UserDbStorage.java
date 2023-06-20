@@ -47,7 +47,6 @@ public class UserDbStorage implements UserStorage {
         Long id = simpleJdbcInsert.executeAndReturnKey(user.toMap()).longValue();
         log.info("Пользователь с ID = {} успешно добавлен.", id);
         return getUser(id);
-
     }
 
     @Override
