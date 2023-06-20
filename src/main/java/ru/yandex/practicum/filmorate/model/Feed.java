@@ -16,7 +16,6 @@ public class Feed {
     @NotNull(message = "Отсутствует автор события")
     private Long userId;
 
-    //@NotNull(message = "Отсутствует время события")
     private Long timestamp;
 
     @NotNull(message = "Отсутствует тип события")
