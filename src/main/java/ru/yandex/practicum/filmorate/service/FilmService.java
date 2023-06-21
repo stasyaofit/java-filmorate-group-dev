@@ -11,6 +11,9 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
+import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
@@ -23,18 +26,25 @@ import java.util.*;
 @Slf4j
 public class FilmService {
     private final FilmStorage filmStorage;
+
     private final UserStorage userStorage;
+
     private final MpaStorage mpaStorage;
+
     private final GenreStorage genreStorage;
+
+    private final FeedStorage feedStorage;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
-            @Qualifier("userDbStorage") UserStorage userStorage,
-            MpaStorage mpaStorage, GenreStorage genreStorage) {
+                       @Qualifier("userDbStorage") UserStorage userStorage,
+                       MpaStorage mpaStorage, GenreStorage genreStorage,
+                       @Qualifier("feedDbStorage") FeedStorage feedStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.mpaStorage = mpaStorage;
         this.genreStorage = genreStorage;
+        this.feedStorage = feedStorage;
     }
 
     public Collection<Film> findAll() {
@@ -47,9 +57,8 @@ public class FilmService {
         checkFilmReleaseDate(film);
         Long filmId = filmStorage.createFilm(film).getId();
         film.getGenres().forEach(genre -> genreStorage.addGenreToFilm(filmId, genre.getId()));
-        film.setId(filmId);
         log.info("Добавили фильм: {}", film.getName());
-        return film;
+        return getFilmById(filmId);
     }
 
     public Film updateFilm(Film film) {
@@ -58,10 +67,9 @@ public class FilmService {
         filmStorage.updateFilm(film);
         genreStorage.deleteGenresFromFilm(film.getId());
         film.getGenres().forEach(genre -> genreStorage.addGenreToFilm(film.getId(), genre.getId()));
-        updateGenreAndMpaAndLike(List.of(film));
 
         log.info("Обновлен фильм c id = {}", film.getId());
-        return film;
+        return getFilmById(film.getId());
     }
 
     public void deleteFilm(Long id) {
@@ -84,8 +92,8 @@ public class FilmService {
         log.info("Пользователь(id = {}) хочет поставить лайк фильму c id: {} .", userId, filmId);
         Film film = getFilmById(filmId);
         filmStorage.addLike(filmId, userId);
-
         log.info("Лайк фильму {} успешно добавлен.", film.getName());
+        feedStorage.addFeed(filmId, userId, EventType.LIKE, Operation.ADD);
     }
 
     public void removeLike(Long filmId, Long userId) {
@@ -95,6 +103,7 @@ public class FilmService {
         Film film = getFilmById(filmId);
         filmStorage.removeLike(filmId, userId);
         log.info("Лайк фильму {} успешно удалён.", film.getName());
+        feedStorage.addFeed(filmId, userId, EventType.LIKE, Operation.REMOVE);
     }
 
     public List<Film> getTopNPopularFilms(Long count) {

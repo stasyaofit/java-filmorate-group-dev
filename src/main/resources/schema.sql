@@ -106,6 +106,19 @@ create table if not exists REVIEW_LIKES
         foreign key (USER_ID) references USERS ON DELETE CASCADE
 );
 
+create table if not exists FEED
+(
+    EVENT_ID   BIGINT auto_increment,
+    ENTITY_ID  BIGINT     not null,
+    USER_ID    BIGINT     not null,
+    CREATED_TS TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    EVENT_TYPE varchar(6) not null,
+    OPERATION  varchar(6) not null,
+    constraint "FEED_pk"
+        primary key (EVENT_ID),
+    constraint "FEED_USERS_USER_ID_fk"
+        foreign key (USER_ID) references USERS ON DELETE CASCADE
+);
 
 
 

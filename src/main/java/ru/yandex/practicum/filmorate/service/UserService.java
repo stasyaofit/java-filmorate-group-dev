@@ -5,7 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
+import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
@@ -16,9 +20,13 @@ import java.util.List;
 public class UserService {
     private final UserStorage userStorage;
 
+    private final FeedStorage feedStorage;
+
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
+            @Qualifier("feedDbStorage") FeedStorage feedStorage) {
         this.userStorage = userStorage;
+        this.feedStorage = feedStorage;
     }
 
     public Collection<User> findAll() {
@@ -41,17 +49,19 @@ public class UserService {
         userStorage.deleteUser(userId);
     }
 
-    public void addFriend(Long id, Long friendId) {
-        checkUserId(id);
+    public void addFriend(Long userId, Long friendId) {
+        checkUserId(userId);
         checkUserId(friendId);
-        userStorage.addFriend(id, friendId);
+        userStorage.addFriend(userId, friendId);
+        feedStorage.addFeed(friendId, userId, EventType.FRIEND, Operation.ADD);
     }
 
-    public void removeFriend(Long id, Long friendId) {
-        checkUserId(id);
+    public void removeFriend(Long userId, Long friendId) {
+        checkUserId(userId);
         checkUserId(friendId);
-        userStorage.deleteFriend(id, friendId);
+        userStorage.deleteFriend(userId, friendId);
         log.info("Пользователь(id = {}) удалён из друзей.", friendId);
+        feedStorage.addFeed(friendId, userId, EventType.FRIEND, Operation.REMOVE);
     }
 
     public User getUserById(Long id) {
@@ -71,6 +81,11 @@ public class UserService {
         checkUserId(userId);
         checkUserId(otherId);
         return userStorage.getCommonFriends(userId, otherId);
+    }
+
+    public List<Feed> getFeedByUserId(Long id) {
+        checkUserId(id);
+        return feedStorage.getFeedByUserId(id);
     }
 
     private void checkName(User user) {
