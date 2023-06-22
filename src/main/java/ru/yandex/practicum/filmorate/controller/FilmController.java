@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import javax.validation.Valid;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -74,6 +75,11 @@ public class FilmController {
     public void deleteFilm(@PathVariable Long id) {
         log.info("Получен DELETE-запрос к эндпоинту: '/films' на удаление фильма с ID={}", id);
         filmService.deleteFilm(id);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirector(@PathVariable Integer directorId, @RequestParam Optional<String> sortBy) {
+        return filmService.getFilmsByDirector(directorId, sortBy);
     }
 }
 
