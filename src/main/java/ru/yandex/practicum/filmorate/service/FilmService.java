@@ -31,11 +31,14 @@ public class FilmService {
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
                        @Qualifier("userDbStorage") UserStorage userStorage,
                        MpaStorage mpaStorage, GenreStorage genreStorage, DirectorStorage directorStorage) {
+                       MpaStorage mpaStorage, GenreStorage genreStorage,
+                       @Qualifier("feedDbStorage") FeedStorage feedStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.mpaStorage = mpaStorage;
         this.genreStorage = genreStorage;
         this.directorStorage = directorStorage;
+        this.feedStorage = feedStorage;
     }
 
     public Collection<Film> findAll() {
@@ -86,8 +89,8 @@ public class FilmService {
         log.info("Пользователь(id = {}) хочет поставить лайк фильму c id: {} .", userId, filmId);
         Film film = getFilmById(filmId);
         filmStorage.addLike(filmId, userId);
-
         log.info("Лайк фильму {} успешно добавлен.", film.getName());
+        feedStorage.addFeed(filmId, userId, EventType.LIKE, Operation.ADD);
     }
     //внутри метода будет new функциональность (feed)
     public void removeLike(Long filmId, Long userId) {
@@ -97,7 +100,7 @@ public class FilmService {
         Film film = getFilmById(filmId);
         filmStorage.removeLike(filmId, userId);
         log.info("Лайк фильму {} успешно удалён.", film.getName());
-
+        feedStorage.addFeed(filmId, userId, EventType.LIKE, Operation.REMOVE);
     }
 
     public List<Film> getTopNPopularFilms(Long count) {

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
@@ -71,7 +72,6 @@ public class UserController {
         log.info("Получен GET-запрос к эндпоинту '/users/{id}/friends' на получение " +
                 "списка друзей пользователя с ID = {}.", id);
         return userService.getUserFriendsById(id);
-
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
@@ -79,5 +79,11 @@ public class UserController {
         log.info("Получен GET-запрос к эндпоинту '/users/{id}/friends/common/{otherId}' на получение " +
                 "списка общих друзей у пользователя с ID = {} с пользователем с ID = {}.", id, otherId);
         return userService.getCommonFriends(id, otherId);
+    }
+    @GetMapping("/{id}/feed")
+    public List<Feed> getFeedByUserId(@PathVariable Long id){
+        log.info("Получен GET-запрос к эндпоинту '/users/{id}/feed' на получение " +
+                "ленты событий для пользователя с ID = {}.", id);
+        return userService.getFeedByUserId(id);
     }
 }
