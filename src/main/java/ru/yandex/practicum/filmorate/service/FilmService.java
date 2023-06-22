@@ -95,6 +95,7 @@ public class FilmService {
         log.info("Лайк фильму {} успешно добавлен.", film.getName());
         feedStorage.addFeed(filmId, userId, EventType.LIKE, Operation.ADD);
     }
+
     //внутри метода будет new функциональность (feed)
     public void removeLike(Long filmId, Long userId) {
         checkFilmId(filmId);
