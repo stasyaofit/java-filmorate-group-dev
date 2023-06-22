@@ -116,6 +116,14 @@ public class FilmService {
         return films;
     }
 
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        checkUserId(userId);
+        checkUserId(friendId);
+        List<Film> films = new ArrayList<>(filmStorage.getCommonFilms(userId, friendId));
+        updateGenreAndMpaAndLike(films);
+        return films;
+    }
+
     private void checkFilmReleaseDate(Film film) {
         if (film.getReleaseDate().isBefore(LocalDate.parse("1895-12-28"))) {
             throw new ValidationException("Дата релиза должна быть не раньше 28 декабря 1895 года");

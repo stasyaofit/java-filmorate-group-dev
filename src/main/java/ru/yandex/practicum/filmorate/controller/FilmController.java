@@ -75,6 +75,14 @@ public class FilmController {
         log.info("Получен DELETE-запрос к эндпоинту: '/films' на удаление фильма с ID={}", id);
         filmService.deleteFilm(id);
     }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam Long userId, @RequestParam Long friendId) {
+        log.info("Получен GET-запрос к эндпоинту '/films/common?userId={}&friendId={}' на получение " +
+                "списка общих фильмов у пользователя с ID = {} с пользователем с ID = {}.", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
 }
 
 
