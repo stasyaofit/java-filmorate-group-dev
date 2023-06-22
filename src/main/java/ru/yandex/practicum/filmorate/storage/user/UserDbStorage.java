@@ -3,23 +3,29 @@ package ru.yandex.practicum.filmorate.storage.user;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @Repository("userDbStorage")
 @Slf4j
 public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Autowired
-    public UserDbStorage(JdbcTemplate jdbcTemplate) {
+    public UserDbStorage(JdbcTemplate jdbcTemplate, NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
     }
 
     @Override
@@ -116,6 +122,42 @@ public class UserDbStorage implements UserStorage {
                 (rs, rowNum) -> rs.getLong("FRIEND_ID"), userId, friendId).size() > 0;
     }
 
+    @Override
+    public Map<Long, Set<Film>> getLikesFilms() {
+        String sqlUserIds = "SELECT USER_ID FROM USERS";
+        List<Long> ids = jdbcTemplate.query(sqlUserIds, (rs, rowNum) -> rs.getLong("USER_ID"));
+        String sql = "SELECT FL.USER_ID, F.*, MR.RATING_NAME FROM FILMS AS F" +
+                " LEFT JOIN FILM_LIKES FL ON F.FILM_ID = FL.FILM_ID" +
+                " LEFT JOIN MPA_RATINGS MR ON F.RATING_ID = MR.RATING_ID " +
+                " WHERE FL.USER_ID IN(:ids)" +
+                " ORDER BY FL.USER_ID, F.FILM_ID;";
+        SqlParameterSource parameters = new MapSqlParameterSource("ids", ids);
+        final Map<Long, Set<Film>> userFilmsMap = new HashMap<>();
+
+        namedParameterJdbcTemplate.query(sql, parameters, rs -> {
+            Long userId = rs.getLong("USER_ID");
+            Film film = mapRowToFilm(rs, 0);
+            String mpaName = rs.getString("RATING_NAME");
+            film.setMpa(new Mpa(rs.getInt("RATING_ID"), mpaName));
+            Set<Film> films = userFilmsMap.getOrDefault(userId, new HashSet<>());
+            films.add(film);
+            userFilmsMap.put(userId, films);
+        });
+        return userFilmsMap;
+    }
+
+    private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
+        Film film = new Film();
+        film.setId(rs.getLong("FILM_ID"));
+        film.setName(rs.getString("FILM_NAME"));
+        film.setDescription(rs.getString("DESCRIPTION"));
+        film.setReleaseDate(rs.getDate("RELEASE_DATE").toLocalDate());
+        film.setDuration(rs.getInt("DURATION"));
+        film.setMpa(new Mpa(rs.getInt("RATING_ID"), null));
+        return film;
+    }
+
+
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
         User user = new User();
         user.setId(rs.getLong("USER_ID"));
@@ -125,4 +167,5 @@ public class UserDbStorage implements UserStorage {
         user.setBirthday(rs.getDate("BIRTHDAY").toLocalDate());
         return user;
     }
+
 }
