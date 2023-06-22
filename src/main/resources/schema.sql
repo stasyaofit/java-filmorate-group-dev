@@ -1,3 +1,13 @@
+DROP ALL OBJECTS;
+
+create table if not exists DIRECTOR
+(
+    DIRECTOR_ID   BIGINT auto_increment,
+    DIRECTOR_NAME CHARACTER VARYING(50) not null,
+    constraint "DIRECTOR_pk"
+        primary key (DIRECTOR_ID)
+);
+
 create table if not exists USERS
 (
     USER_ID  BIGINT auto_increment,
@@ -39,6 +49,18 @@ create table if not exists FILMS
         foreign key (RATING_ID) references MPA_RATINGS ON DELETE RESTRICT
 );
 
+create table if not exists FILM_DIRECTOR
+(
+    FILM_ID     BIGINT  not null,
+    DIRECTOR_ID INTEGER not null,
+    constraint "FILM_DIRECTOR_pk"
+        primary key (FILM_ID, DIRECTOR_ID),
+    constraint "FILM_DIRECTOR_DIRECTOR_DIRECTOR_ID_fk"
+        foreign key (DIRECTOR_ID) references DIRECTOR ON DELETE CASCADE,
+    constraint "FILM_DIRECTOR_FILMS_FILM_ID_fk"
+        foreign key (FILM_ID) references FILMS ON DELETE CASCADE
+);
+
 create table if not exists FILM_LIKES
 (
     FILM_ID BIGINT not null,
@@ -75,11 +97,3 @@ create table if not exists FRIENDS
     constraint "friends_USERS_USER_ID_fk2"
         foreign key (FRIEND_ID) references USERS ON DELETE CASCADE
 );
-
-
-
-
-
-
-
-
