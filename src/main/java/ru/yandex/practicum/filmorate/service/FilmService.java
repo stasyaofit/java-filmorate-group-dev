@@ -147,7 +147,7 @@ public class FilmService {
         checkUserId(userId);
         checkUserId(friendId);
         List<Film> films = new ArrayList<>(filmStorage.getCommonFilms(userId, friendId));
-        updateGenreAndMpaAndLike(films);
+        updateGenreAndMpaAndLikeAndDirector(films);
         return films;
     }
 
