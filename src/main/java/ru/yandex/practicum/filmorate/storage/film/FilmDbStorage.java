@@ -87,15 +87,6 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getTopNPopularFilms(Long count) {
-        String getPopularQuery =
-                "SELECT F.FILM_ID, F.FILM_NAME, F.DESCRIPTION, F.RELEASE_DATE, F.DURATION, F.RATING_ID " +
-                        "FROM FILMS AS F LEFT JOIN FILM_LIKES FL ON F.FILM_ID = FL.FILM_ID " +
-                        "GROUP BY F.FILM_ID ORDER BY COUNT(FL.USER_ID) DESC LIMIT ?";
-        return jdbcTemplate.query(getPopularQuery, this::mapRowToFilm, count);
-    }
-
-    @Override
     public Map<Long, Set<Long>> getLikeMap(List<Long> ids) {
         String sql = "SELECT FILM_ID, USER_ID FROM FILM_LIKES WHERE FILM_ID IN (:ids)";
         SqlParameterSource parameters = new MapSqlParameterSource("ids", ids);
@@ -109,6 +100,54 @@ public class FilmDbStorage implements FilmStorage {
             likeMap.put(filmId, likes);
         });
         return likeMap;
+    }
+
+    @Override
+    public List<Film> getTopNPopularFilms(Long count) {
+        String getPopularQuery = "SELECT F.FILM_ID, F.FILM_NAME, F.DESCRIPTION, F.RELEASE_DATE, F.DURATION, F.RATING_ID " +
+                "FROM FILMS AS F LEFT JOIN FILM_LIKES FL ON F.FILM_ID = FL.FILM_ID " +
+                "GROUP BY F.FILM_ID ORDER BY COUNT(FL.USER_ID) DESC LIMIT ?";
+        return jdbcTemplate.query(getPopularQuery, this::mapRowToFilm, count);
+    }
+
+    @Override
+    public List<Film> getFilmsByDirector(Integer directorId) {
+        String sql = "SELECT F.*, MR.RATING_NAME, FD.DIRECTOR_ID, D.DIRECTOR_NAME \n" +
+                "FROM FILMS AS F \n" +
+                "LEFT JOIN FILM_DIRECTOR FD ON F.FILM_ID = FD.FILM_ID \n" +
+                "LEFT JOIN DIRECTOR D ON D.DIRECTOR_ID = FD.DIRECTOR_ID \n" +
+                "LEFT JOIN MPA_RATINGS MR ON MR.RATING_ID = F.RATING_ID \n" +
+                "WHERE D.DIRECTOR_ID = 1;";
+
+        return jdbcTemplate.query(sql, this::mapRowToFilm);
+    }
+
+    @Override
+    public List<Film> getFilmsDirectorSortByYear(Integer directorId) {
+        String sql = "SELECT F.*, MR.RATING_NAME, FD.DIRECTOR_ID, D.DIRECTOR_NAME \n" +
+                "FROM FILMS AS F \n" +
+                "LEFT JOIN FILM_DIRECTOR FD ON F.FILM_ID = FD.FILM_ID \n" +
+                "LEFT JOIN DIRECTOR D ON D.DIRECTOR_ID = FD.DIRECTOR_ID \n" +
+                "LEFT JOIN MPA_RATINGS MR ON MR.RATING_ID = F.RATING_ID \n" +
+                "WHERE D.DIRECTOR_ID = 1\n" +
+                "ORDER BY YEAR(F.RELEASE_DATE);";
+
+        return jdbcTemplate.query(sql, this::mapRowToFilm);
+    }
+
+    @Override
+    public List<Film> getFilmsDirectorSortByLikes(Integer directorId) {
+        String sql = "SELECT F.*, MR.RATING_NAME, FD.DIRECTOR_ID, D.DIRECTOR_NAME, COUNT(FL.USER_ID) " +
+                "FROM FILMS AS F " +
+                "LEFT JOIN FILM_LIKES FL ON F.FILM_ID = FL.FILM_ID " +
+                "LEFT JOIN FILM_DIRECTOR FD ON F.FILM_ID = FD.FILM_ID " +
+                "LEFT JOIN DIRECTOR D ON D.DIRECTOR_ID = FD.DIRECTOR_ID " +
+                "LEFT JOIN MPA_RATINGS MR ON MR.RATING_ID = F.RATING_ID " +
+                "WHERE D.DIRECTOR_ID = 1 " +
+                "GROUP BY F.FILM_ID " +
+                "ORDER BY COUNT(FL.USER_ID) DESC;";
+
+        return jdbcTemplate.query(sql, this::mapRowToFilm);
     }
 
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {

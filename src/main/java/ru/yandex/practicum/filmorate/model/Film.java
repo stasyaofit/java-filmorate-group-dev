@@ -8,10 +8,7 @@ import org.hibernate.validator.constraints.Length;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @RequiredArgsConstructor
@@ -32,6 +29,7 @@ public class Film {
     private Set<Long> likes = new HashSet<>();
     private Mpa mpa;
     private Set<Genre> genres = new HashSet<>();
+    private Set<Director> directors = new LinkedHashSet<>();
 
     public Map<String, Object> toMap() {
         Map<String, Object> values = new HashMap<>();
