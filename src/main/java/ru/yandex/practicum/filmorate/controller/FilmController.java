@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import javax.validation.Valid;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -75,6 +76,19 @@ public class FilmController {
         log.info("Получен DELETE-запрос к эндпоинту: '/films' на удаление фильма с ID={}", id);
         filmService.deleteFilm(id);
     }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirector(@PathVariable Integer directorId, @RequestParam Optional<String> sortBy) {
+        return filmService.getFilmsByDirector(directorId, sortBy);
+    }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam Long userId, @RequestParam Long friendId) {
+        log.info("Получен GET-запрос к эндпоинту '/films/common?userId={userId}&friendId={friendId}' на получение " +
+                "списка общих фильмов у пользователя с ID = {} с пользователем с ID = {}.", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
 }
 
 
