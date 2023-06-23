@@ -111,12 +111,55 @@ public class FilmDbStorage implements FilmStorage {
         return likeMap;
     }
 
+    // убрал аналогичный метод, оставил обновленный
     @Override
-    public List<Film> getTopNPopularFilms(Long count) {
-        String getPopularQuery = "SELECT F.FILM_ID, F.FILM_NAME, F.DESCRIPTION, F.RELEASE_DATE, F.DURATION, F.RATING_ID " +
-                "FROM FILMS AS F LEFT JOIN FILM_LIKES FL ON F.FILM_ID = FL.FILM_ID " +
-                "GROUP BY F.FILM_ID ORDER BY COUNT(FL.USER_ID) DESC LIMIT ?";
-        return jdbcTemplate.query(getPopularQuery, this::mapRowToFilm, count);
+    public List<Film>  getTopNPopularFilms(Integer count, Integer genreId, Integer year) {
+        List<Film> filmsPopular;
+        if (genreId != null && year != null) {
+            String sql = "SELECT F.* FROM films AS F " +
+                    "LEFT JOIN film_genres AS FG ON FG.film_id = F.film_id " +
+                    "LEFT JOIN genres AS G ON G.genre_id = FG.genre_id " +
+                    "LEFT JOIN film_likes AS FL ON FL.film_id = F.film_id " +
+                    "WHERE G.genre_id = ? AND YEAR(release_date) = ? " +
+                    "GROUP BY F.film_id " +
+                    "ORDER BY COUNT(FL.user_id) DESC " +
+                    "LIMIT ?";
+            filmsPopular = jdbcTemplate.query(sql, this::mapRowToFilm, genreId, year, count);
+            log.info("Популярные фильмы по жанру {}, году {} успешно получены", genreId, year);
+        } else if (year != null) {
+            String sql = "SELECT F.* FROM films AS F " +
+                    "LEFT JOIN film_genres AS FG ON FG.film_id = F.film_id " +
+                    "LEFT JOIN genres AS G ON G.genre_id = FG.genre_id " +
+                    "LEFT JOIN film_likes AS FL ON FL.film_id = F.film_id " +
+                    "WHERE YEAR(release_date) = ? " +
+                    "GROUP BY F.film_id " +
+                    "ORDER BY COUNT(FL.user_id) DESC " +
+                    "LIMIT ?";
+            filmsPopular = jdbcTemplate.query(sql, this::mapRowToFilm, year, count);
+            log.info("Популярные фильмы по году {} успешно получены", year);
+        } else if (genreId != null) {
+            String sql = "SELECT F.* FROM films AS F " +
+                    "LEFT JOIN film_genres AS FG ON FG.film_id = F.film_id " +
+                    "LEFT JOIN genres AS G ON G.genre_id = FG.genre_id " +
+                    "LEFT JOIN film_likes AS FL ON FL.film_id = F.film_id " +
+                    "WHERE G.genre_id = ? " +
+                    "GROUP BY F.film_id " +
+                    "ORDER BY COUNT(FL.user_id) DESC " +
+                    "LIMIT ?";
+            filmsPopular = jdbcTemplate.query(sql, this::mapRowToFilm, genreId, count);
+            log.info("Популярные фильмы по жанру {} успешно получены", genreId);
+        } else {
+            String sql = "SELECT F.* FROM films AS F " +
+                    "LEFT JOIN film_genres AS FG ON FG.film_id = F.film_id " +
+                    "LEFT JOIN genres AS G ON G.genre_id = FG.genre_id " +
+                    "LEFT JOIN film_likes AS FL ON FL.film_id = F.film_id " +
+                    "GROUP BY F.film_id " +
+                    "ORDER BY COUNT(FL.user_id) DESC " +
+                    "LIMIT ?";
+            filmsPopular = jdbcTemplate.query(sql, this::mapRowToFilm, count);
+            log.info("Популярные фильмы успешно получены");
+        }
+        return filmsPopular;
     }
 
     @Override
@@ -126,9 +169,9 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN FILM_DIRECTOR FD ON F.FILM_ID = FD.FILM_ID \n" +
                 "LEFT JOIN DIRECTOR D ON D.DIRECTOR_ID = FD.DIRECTOR_ID \n" +
                 "LEFT JOIN MPA_RATINGS MR ON MR.RATING_ID = F.RATING_ID \n" +
-                "WHERE D.DIRECTOR_ID = 1;";
+                "WHERE D.DIRECTOR_ID = ?;";
 
-        return jdbcTemplate.query(sql, this::mapRowToFilm);
+        return jdbcTemplate.query(sql, this::mapRowToFilm, directorId);
     }
 
     @Override
@@ -138,10 +181,10 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN FILM_DIRECTOR FD ON F.FILM_ID = FD.FILM_ID \n" +
                 "LEFT JOIN DIRECTOR D ON D.DIRECTOR_ID = FD.DIRECTOR_ID \n" +
                 "LEFT JOIN MPA_RATINGS MR ON MR.RATING_ID = F.RATING_ID \n" +
-                "WHERE D.DIRECTOR_ID = 1\n" +
+                "WHERE D.DIRECTOR_ID = ?\n" +
                 "ORDER BY YEAR(F.RELEASE_DATE);";
 
-        return jdbcTemplate.query(sql, this::mapRowToFilm);
+        return jdbcTemplate.query(sql, this::mapRowToFilm, directorId);
     }
 
     @Override
@@ -152,11 +195,11 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN FILM_DIRECTOR FD ON F.FILM_ID = FD.FILM_ID " +
                 "LEFT JOIN DIRECTOR D ON D.DIRECTOR_ID = FD.DIRECTOR_ID " +
                 "LEFT JOIN MPA_RATINGS MR ON MR.RATING_ID = F.RATING_ID " +
-                "WHERE D.DIRECTOR_ID = 1 " +
+                "WHERE D.DIRECTOR_ID = ? " +
                 "GROUP BY F.FILM_ID " +
                 "ORDER BY COUNT(FL.USER_ID) DESC;";
 
-        return jdbcTemplate.query(sql, this::mapRowToFilm);
+        return jdbcTemplate.query(sql, this::mapRowToFilm, directorId);
     }
 
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
