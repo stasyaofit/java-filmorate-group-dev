@@ -25,6 +25,8 @@ public interface FilmStorage {
 
     List<Film> getTopNPopularFilms(Long count);
 
+    List<Film> getCommonFilms(Long userId, Long friendId);
+
     Map<Long, Set<Long>> getLikeMap(List<Long> ids);
 
     List<Film> getFilmsByDirector(Integer directorId);
