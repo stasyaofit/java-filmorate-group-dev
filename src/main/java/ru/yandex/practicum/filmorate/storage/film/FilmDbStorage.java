@@ -126,9 +126,9 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN FILM_DIRECTOR FD ON F.FILM_ID = FD.FILM_ID \n" +
                 "LEFT JOIN DIRECTOR D ON D.DIRECTOR_ID = FD.DIRECTOR_ID \n" +
                 "LEFT JOIN MPA_RATINGS MR ON MR.RATING_ID = F.RATING_ID \n" +
-                "WHERE D.DIRECTOR_ID = 1;";
+                "WHERE D.DIRECTOR_ID = ?;";
 
-        return jdbcTemplate.query(sql, this::mapRowToFilm);
+        return jdbcTemplate.query(sql, this::mapRowToFilm, directorId);
     }
 
     @Override
@@ -138,10 +138,10 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN FILM_DIRECTOR FD ON F.FILM_ID = FD.FILM_ID \n" +
                 "LEFT JOIN DIRECTOR D ON D.DIRECTOR_ID = FD.DIRECTOR_ID \n" +
                 "LEFT JOIN MPA_RATINGS MR ON MR.RATING_ID = F.RATING_ID \n" +
-                "WHERE D.DIRECTOR_ID = 1\n" +
+                "WHERE D.DIRECTOR_ID = ?\n" +
                 "ORDER BY YEAR(F.RELEASE_DATE);";
 
-        return jdbcTemplate.query(sql, this::mapRowToFilm);
+        return jdbcTemplate.query(sql, this::mapRowToFilm, directorId);
     }
 
     @Override
@@ -152,11 +152,11 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN FILM_DIRECTOR FD ON F.FILM_ID = FD.FILM_ID " +
                 "LEFT JOIN DIRECTOR D ON D.DIRECTOR_ID = FD.DIRECTOR_ID " +
                 "LEFT JOIN MPA_RATINGS MR ON MR.RATING_ID = F.RATING_ID " +
-                "WHERE D.DIRECTOR_ID = 1 " +
+                "WHERE D.DIRECTOR_ID = ? " +
                 "GROUP BY F.FILM_ID " +
                 "ORDER BY COUNT(FL.USER_ID) DESC;";
 
-        return jdbcTemplate.query(sql, this::mapRowToFilm);
+        return jdbcTemplate.query(sql, this::mapRowToFilm, directorId);
     }
 
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
