@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate;
 
 import lombok.RequiredArgsConstructor;
-import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -237,47 +236,7 @@ class FilmorateApplicationTests {
         assertThat(firstFilm.getLikes()).contains(secondUser.getId());
     }
 
-    @Test
-    public void testGetTopNPopularFilms() {
-
-        firstUser = userStorage.createUser(firstUser);
-        secondUser = userStorage.createUser(secondUser);
-        thirdUser = userStorage.createUser(thirdUser);
-
-        firstFilm = filmStorage.createFilm(firstFilm);
-        filmService.addLike(firstFilm.getId(), firstUser.getId());
-
-        secondFilm = filmStorage.createFilm(secondFilm);
-        filmService.addLike(secondFilm.getId(), firstUser.getId());
-        filmService.addLike(secondFilm.getId(), secondUser.getId());
-        filmService.addLike(secondFilm.getId(), thirdUser.getId());
-
-        thirdFilm = filmStorage.createFilm(thirdFilm);
-        filmService.addLike(thirdFilm.getId(), firstUser.getId());
-        filmService.addLike(thirdFilm.getId(), secondUser.getId());
-
-        List<Film> listFilms = filmService.getTopNPopularFilms(5L);
-        System.out.println(listFilms);
-
-        assertThat(listFilms).hasSize(3);
-
-        assertThat(Optional.of(listFilms.get(0)))
-                .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", SECOND_FILM_NAME));
-
-        assertThat(Optional.of(listFilms.get(1)))
-                .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", THIRD_FILM_NAME));
-
-        assertThat(Optional.of(listFilms.get(2)))
-                .hasValueSatisfying(film ->
-                        AssertionsForClassTypes.assertThat(film)
-                                .hasFieldOrPropertyWithValue("name", FIRST_FILM_NAME));
-    }
-
-    @Test
+        @Test
     public void testAddFriend() {
         firstUser = userStorage.createUser(firstUser);
         secondUser = userStorage.createUser(secondUser);

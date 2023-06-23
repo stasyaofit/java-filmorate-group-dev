@@ -107,13 +107,10 @@ public class FilmService {
         feedStorage.addFeed(filmId, userId, EventType.LIKE, Operation.REMOVE);
     }
 
-    public List<Film> getTopNPopularFilms(Long count) {
-        if (count < 0) {
-            log.error("Количество фильмов не может быть отрицательным.");
-            throw new IncorrectParameterException("count");
-        }
-        List<Film> films = filmStorage.getTopNPopularFilms(count);
-        updateGenreAndMpaAndLikeAndDirector(films); // добавил режиссёров
+    // убрал аналогичный метод, оставил обновленный
+    public List<Film> getTopNPopularFilms(Integer count, Integer genreId, Integer year) {
+        List<Film> films = new ArrayList<>(filmStorage.getTopNPopularFilms(count, genreId, year));
+        updateGenreAndMpaAndLikeAndDirector(films);
         return films;
     }
 
