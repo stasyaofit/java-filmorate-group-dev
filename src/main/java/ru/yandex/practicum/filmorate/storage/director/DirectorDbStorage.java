@@ -106,8 +106,8 @@ public class DirectorDbStorage implements DirectorStorage {
 
     @Override
     public List<Director> findAllById(Long filmId) {
-        String SQL_QUERY_FIND_DIRECTORS = "SELECT * FROM FILM_DIRECTORS AS fd " +
-                "JOIN DIRECTORS as d ON fd.director_id = d.director_id WHERE fd.film_id = ?";
+        String SQL_QUERY_FIND_DIRECTORS = "SELECT * FROM FILM_DIRECTOR AS fd " +
+                "JOIN DIRECTOR as d ON fd.director_id = d.director_id WHERE fd.film_id = ?";
         return jdbcTemplate.query(SQL_QUERY_FIND_DIRECTORS, this::mapRowToDirector, filmId);
     }
 
