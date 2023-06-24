@@ -117,9 +117,9 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN FILM_DIRECTOR FD ON F.FILM_ID = FD.FILM_ID \n" +
                 "LEFT JOIN DIRECTOR D ON D.DIRECTOR_ID = FD.DIRECTOR_ID \n" +
                 "LEFT JOIN MPA_RATINGS MR ON MR.RATING_ID = F.RATING_ID \n" +
-                "WHERE D.DIRECTOR_ID = 1;";
+                "WHERE D.DIRECTOR_ID = ?;";
 
-        return jdbcTemplate.query(sql, this::mapRowToFilm);
+        return jdbcTemplate.query(sql, this::mapRowToFilm, directorId);
     }
 
     @Override
@@ -129,10 +129,10 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN FILM_DIRECTOR FD ON F.FILM_ID = FD.FILM_ID \n" +
                 "LEFT JOIN DIRECTOR D ON D.DIRECTOR_ID = FD.DIRECTOR_ID \n" +
                 "LEFT JOIN MPA_RATINGS MR ON MR.RATING_ID = F.RATING_ID \n" +
-                "WHERE D.DIRECTOR_ID = 1\n" +
+                "WHERE D.DIRECTOR_ID = ?\n" +
                 "ORDER BY YEAR(F.RELEASE_DATE);";
 
-        return jdbcTemplate.query(sql, this::mapRowToFilm);
+        return jdbcTemplate.query(sql, this::mapRowToFilm, directorId);
     }
 
     @Override
@@ -143,11 +143,43 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN FILM_DIRECTOR FD ON F.FILM_ID = FD.FILM_ID " +
                 "LEFT JOIN DIRECTOR D ON D.DIRECTOR_ID = FD.DIRECTOR_ID " +
                 "LEFT JOIN MPA_RATINGS MR ON MR.RATING_ID = F.RATING_ID " +
-                "WHERE D.DIRECTOR_ID = 1 " +
+                "WHERE D.DIRECTOR_ID = ? " +
                 "GROUP BY F.FILM_ID " +
                 "ORDER BY COUNT(FL.USER_ID) DESC;";
 
-        return jdbcTemplate.query(sql, this::mapRowToFilm);
+        return jdbcTemplate.query(sql, this::mapRowToFilm, directorId);
+    }
+
+    @Override
+    public List<Film> searchFilmsByNameOrDirector(String textQuery, List<String> searchParams) {
+        String textQuerySQL = "%" + textQuery + "%";
+        if (searchParams.size() == 2) {
+            String SQL_QUERY_SEARCH_BY_TITLE_AND_DIRECTOR = "SELECT * FROM FILMS f " +
+                    "LEFT JOIN MPA_RATINGS M ON M.RATING_ID = F.RATING_ID " +
+                    "LEFT JOIN FILM_DIRECTOR FD ON FD.FILM_ID = F.FILM_ID " +
+                    "LEFT JOIN DIRECTOR D ON D.DIRECTOR_ID = FD.DIRECTOR_ID " +
+                    "WHERE LOWER(F.DIRECTOR_NAME) LIKE LOWER(?) OR LOWER(D.DIRECTOR_NAME) LIKE LOWER(?) " +
+                    "GROUP BY F.FILM_ID " +
+                    "ORDER BY COUNT(FL.USER_ID) DESC ";
+            return jdbcTemplate.query(SQL_QUERY_SEARCH_BY_TITLE_AND_DIRECTOR, this::mapRowToFilm, textQuerySQL, textQuerySQL);
+        }
+        if (searchParams.contains("director")) {
+            String SQL_QUERY_SEARCH_BY_DIRECTOR = "SELECT * FROM FILMS f " +
+                    "LEFT JOIN MPA_RATINGS M ON M.RATING_ID = F.RATING_ID " +
+                    "LEFT JOIN FILM_DIRECTOR FD ON FD.FILM_ID = F.FILM_ID " +
+                    "LEFT JOIN DIRECTOR D ON D.DIRECTOR_ID = FD.DIRECTOR_ID " +
+                    "LEFT JOIN FILM_LIKES AS FL ON FL.FILM_ID = F.FILM_ID " +
+                    "WHERE LOWER(D.DIRECTOR_NAME) LIKE LOWER(?) " +
+                    "GROUP BY F.FILM_ID " +
+                    "ORDER BY COUNT(FL.USER_ID) DESC ";
+            return jdbcTemplate.query(SQL_QUERY_SEARCH_BY_DIRECTOR, this::mapRowToFilm, textQuerySQL);
+        }
+        String SQL_QUERY_SEARCH_BY_TITLE = "SELECT * FROM FILMS f " +
+                "LEFT JOIN MPA_RATINGS M ON M.RATING_ID = F.RATING_ID " +
+                "WHERE LOWER(f.DIRECTOR_NAME) LIKE LOWER(?)" +
+                "GROUP BY F.FILM_ID " +
+                "ORDER BY COUNT(FL.USER_ID) DESC ";
+        return jdbcTemplate.query(SQL_QUERY_SEARCH_BY_TITLE, this::mapRowToFilm, textQuerySQL);
     }
 
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {

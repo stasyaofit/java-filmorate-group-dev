@@ -104,6 +104,13 @@ public class DirectorDbStorage implements DirectorStorage {
         return directorMap;
     }
 
+    @Override
+    public List<Director> findAllById(Long filmId) {
+        String SQL_QUERY_FIND_DIRECTORS = "SELECT * FROM FILM_DIRECTORS AS fd " +
+                "JOIN DIRECTORS as d ON fd.director_id = d.director_id WHERE fd.film_id = ?";
+        return jdbcTemplate.query(SQL_QUERY_FIND_DIRECTORS, this::mapRowToDirector, filmId);
+    }
+
 
     private Director mapRowToDirector(ResultSet rs, int rowNum) throws SQLException {
         Integer id = rs.getInt("DIRECTOR_ID");
