@@ -72,15 +72,11 @@ public class ReviewService {
     }
 
     public Review updateReview(Review review) {
-        Long reviewId = review.getReviewId();
-        Long userId = review.getUserId();
-        checkReviewId(reviewId);
-        checkFilmId(review.getFilmId());
-        checkUserId(userId);
-        reviewStorage.updateReview(review);
-        log.info("Обновлен отзыв c id = {}", reviewId);
-        feedStorage.addFeed(reviewId, userId, EventType.REVIEW, Operation.UPDATE);
-        return getReviewById(reviewId);
+        checkReviewId(review.getReviewId());
+        review = reviewStorage.updateReview(review);
+        log.info("Обновлен отзыв c id = {}", review.getReviewId());
+        feedStorage.addFeed(review.getReviewId(), review.getUserId(), EventType.REVIEW, Operation.UPDATE);
+        return review;
     }
 
     public void deleteReview(Long reviewId) {
