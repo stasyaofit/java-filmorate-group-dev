@@ -113,7 +113,7 @@ public class FilmDbStorage implements FilmStorage {
 
     // убрал аналогичный метод, оставил обновленный
     @Override
-    public List<Film>  getTopNPopularFilms(Integer count, Integer genreId, Integer year) {
+    public List<Film> getTopNPopularFilms(Integer count, Integer genreId, Integer year) {
         List<Film> filmsPopular;
         if (genreId != null && year != null) {
             String sql = "SELECT F.* FROM films AS F " +
@@ -206,7 +206,7 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> searchFilmsByNameOrDirector(String textQuery, List<String> searchParams) {
         String textQuerySQL = "%" + textQuery + "%";
         if (searchParams.contains("title") && searchParams.contains("director")) {
-            String SQL_QUERY_SEARCH_BY_TITLE_AND_DIRECTOR = "SELECT F.*, MR.RATING_NAME, FD.DIRECTOR_ID,\n" +
+            String sql = "SELECT F.*, MR.RATING_NAME, FD.DIRECTOR_ID,\n" +
                     "D.DIRECTOR_NAME, COUNT(FL.USER_ID)\n" +
                     "FROM FILMS AS F\n" +
                     "LEFT JOIN FILM_LIKES FL ON F.FILM_ID = FL.FILM_ID\n" +
@@ -216,10 +216,10 @@ public class FilmDbStorage implements FilmStorage {
                     "WHERE LOWER(F.FILM_NAME) LIKE LOWER(?) OR LOWER(D.DIRECTOR_NAME) LIKE LOWER(?)\n" +
                     "GROUP BY F.FILM_ID\n" +
                     "ORDER BY COUNT(FL.USER_ID) DESC;";
-            return jdbcTemplate.query(SQL_QUERY_SEARCH_BY_TITLE_AND_DIRECTOR, this::mapRowToFilm,
+            return jdbcTemplate.query(sql, this::mapRowToFilm,
                     textQuerySQL, textQuerySQL);
         } else if (searchParams.contains("director")) {
-            String SQL_QUERY_SEARCH_BY_DIRECTOR = "SELECT * FROM FILMS f " +
+            String sql = "SELECT * FROM FILMS f " +
                     "JOIN MPA_RATINGS M ON M.RATING_ID = F.RATING_ID " +
                     "JOIN FILM_DIRECTOR FD ON FD.FILM_ID = F.FILM_ID " +
                     "JOIN DIRECTOR D ON D.DIRECTOR_ID = FD.DIRECTOR_ID " +
@@ -227,16 +227,16 @@ public class FilmDbStorage implements FilmStorage {
                     "WHERE LOWER(D.DIRECTOR_NAME) LIKE LOWER(?) " +
                     "GROUP BY F.FILM_ID " +
                     "ORDER BY COUNT(FL.USER_ID) DESC ";
-            return jdbcTemplate.query(SQL_QUERY_SEARCH_BY_DIRECTOR, this::mapRowToFilm, textQuerySQL);
+            return jdbcTemplate.query(sql, this::mapRowToFilm, textQuerySQL);
         } else if (searchParams.contains("title")) {
-            String SQL_QUERY_SEARCH_BY_TITLE = "SELECT F.*, MR.RATING_NAME, COUNT(FL.USER_ID)\n" +
+            String sql = "SELECT F.*, MR.RATING_NAME, COUNT(FL.USER_ID)\n" +
                     "FROM FILMS AS F\n" +
                     "LEFT JOIN FILM_LIKES FL ON F.FILM_ID = FL.FILM_ID\n" +
                     "LEFT JOIN MPA_RATINGS MR ON MR.RATING_ID = F.RATING_ID\n" +
                     "WHERE LOWER(F.FILM_NAME) LIKE LOWER(?)\n" +
                     "GROUP BY F.FILM_ID\n" +
                     "ORDER BY COUNT(FL.USER_ID);";
-            return jdbcTemplate.query(SQL_QUERY_SEARCH_BY_TITLE, this::mapRowToFilm, textQuerySQL);
+            return jdbcTemplate.query(sql, this::mapRowToFilm, textQuerySQL);
         } else {
             return null;
         }
