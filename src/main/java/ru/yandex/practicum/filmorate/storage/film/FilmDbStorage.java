@@ -240,7 +240,6 @@ public class FilmDbStorage implements FilmStorage {
         } else {
             return null;
         }
-        return jdbcTemplate.query(sql, this::mapRowToFilm, directorId);
     }
 
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
