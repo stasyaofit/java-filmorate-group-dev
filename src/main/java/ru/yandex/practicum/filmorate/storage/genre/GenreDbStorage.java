@@ -76,13 +76,6 @@ public class GenreDbStorage implements GenreStorage {
         return genreMap;
     }
 
-    @Override
-    public List<Genre> findAllById(Long filmId) {
-        String SQL_QUERY_FIND_GENRES = "SELECT * FROM FILM_GENRES AS fg " +
-                "JOIN GENRES as g ON fg.genre_id = g.genre_id WHERE film_id = ?";
-        return jdbcTemplate.query(SQL_QUERY_FIND_GENRES, this::mapRowToGenre, filmId);
-    }
-
     private Genre mapRowToGenre(ResultSet rs, int rowNum) throws SQLException {
         return new Genre(rs.getInt("GENRE_ID"), rs.getString("GENRE_NAME"));
     }

@@ -18,6 +18,4 @@ public interface GenreStorage {
     void addFilmGenres(Film film);
 
     Map<Long, Set<Genre>> getGenreMap(List<Long> ids);
-
-    List<Genre> findAllById(Long genreId);
 }
