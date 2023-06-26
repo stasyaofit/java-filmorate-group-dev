@@ -66,14 +66,14 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse reviewNotFoundException(final ReviewNotFoundException e) {
+    public ErrorResponse handleReviewNotFoundException(final ReviewNotFoundException e) {
         log.error(e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse directorNotFoundException(final DirectorNotFoundException e) {
+    public ErrorResponse handleDirectorNotFoundException(final DirectorNotFoundException e) {
         log.error(e.getMessage());
         return new ErrorResponse(e.getMessage());
     }

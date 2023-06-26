@@ -45,14 +45,14 @@ public class DirectorService {
     public Director getDirectorById(Integer id) {
         Director director = directorStorage.getDirector(id);
         if (director == null) {
-            throw new DirNotFoundException("Режиссёр с ID = " + id + " не найден.");
+            throw new DirectorNotFoundException("Режиссёр с ID = " + id + " не найден.");
         }
         return director;
     }
 
     private void checkDirectorId(Integer id) {
         if (id < 1 || directorStorage.getDirector(id) == null) {
-            throw new DirNotFoundException("Режиссёр с ID = " + id + " не найден.");
+            throw new DirectorNotFoundException("Режиссёр с ID = " + id + " не найден.");
         }
     }
 }
