@@ -73,7 +73,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse directorNotFoundException(final DirNotFoundException e) {
+    public ErrorResponse directorNotFoundException(final DirectorNotFoundException e) {
         log.error(e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
