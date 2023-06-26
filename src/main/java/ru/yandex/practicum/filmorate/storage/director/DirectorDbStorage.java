@@ -104,7 +104,6 @@ public class DirectorDbStorage implements DirectorStorage {
         return directorMap;
     }
 
-
     private Director mapRowToDirector(ResultSet rs, int rowNum) throws SQLException {
         Integer id = rs.getInt("DIRECTOR_ID");
         String name = rs.getString("DIRECTOR_NAME");

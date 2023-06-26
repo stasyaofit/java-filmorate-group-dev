@@ -212,4 +212,11 @@ public class FilmService {
             }
         }
     }
+
+    public List<Film> searchFilms(String textQuery, List<String> searchParams) {
+        List<Film> searchResult = filmStorage.searchFilmsByNameOrDirector(textQuery, searchParams);
+        log.info("Поиск фильма по запросу {} ", textQuery);
+        updateGenreAndMpaAndLikeAndDirector(searchResult);
+        return searchResult;
+    }
 }
