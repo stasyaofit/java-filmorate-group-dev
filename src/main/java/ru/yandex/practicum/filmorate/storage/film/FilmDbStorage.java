@@ -111,7 +111,6 @@ public class FilmDbStorage implements FilmStorage {
         return likeMap;
     }
 
-    // убрал аналогичный метод, оставил обновленный
     @Override
     public List<Film> getTopNPopularFilms(Integer count, Integer genreId, Integer year) {
         List<Film> filmsPopular;

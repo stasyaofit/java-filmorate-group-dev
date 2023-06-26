@@ -46,27 +46,26 @@ public class FilmService {
 
     public Collection<Film> findAll() {
         Collection<Film> films = filmStorage.findAll();
-        updateGenreAndMpaAndLikeAndDirector(films); // добавил режиссёр
+        updateGenreAndMpaAndLikeAndDirector(films);
         return films;
     }
 
-    // актуальный код по сравнению с develop
+
     public Film createFilm(Film film) {
         checkFilmReleaseDate(film);
         Long filmId = filmStorage.createFilm(film).getId();
-        film.setId(filmId);// в метод ниже должен передваться объект с установленным id
-        putGenreAndDirector(film);// вынес в отдельный добавления в БД
+        film.setId(filmId);
+        putGenreAndDirector(film);
         log.info("Добавили фильм: {}", film.getName());
         return getFilmById(filmId);
     }
 
-    // актуальный код по сравнению с develop
     public Film updateFilm(Film film) {
         checkFilmReleaseDate(film);
         checkFilmId(film.getId());
         filmStorage.updateFilm(film);
-        deleteGenreAndDirector(film.getId());// удаление из БД
-        putGenreAndDirector(film);// добавление в БД
+        deleteGenreAndDirector(film.getId());
+        putGenreAndDirector(film);
         log.info("Обновлен фильм c id = {}", film.getId());
         return getFilmById(film.getId());
     }
@@ -81,11 +80,10 @@ public class FilmService {
         if (film == null) {
             throw new FilmNotFoundException("Фильм с ID = " + id + " не найден.");
         }
-        updateGenreAndMpaAndLikeAndDirector(List.of(film));// добавил режиссёров
+        updateGenreAndMpaAndLikeAndDirector(List.of(film));
         return film;
     }
 
-    //внутри метода будет new функциональность (feed)
     public void addLike(Long filmId, Long userId) {
         checkFilmId(filmId);
         checkUserId(userId);
@@ -96,7 +94,6 @@ public class FilmService {
         feedStorage.addFeed(filmId, userId, EventType.LIKE, Operation.ADD);
     }
 
-    //внутри метода будет new функциональность (feed)
     public void removeLike(Long filmId, Long userId) {
         checkFilmId(filmId);
         checkUserId(userId);
@@ -107,18 +104,16 @@ public class FilmService {
         feedStorage.addFeed(filmId, userId, EventType.LIKE, Operation.REMOVE);
     }
 
-    // убрал аналогичный метод, оставил обновленный
     public List<Film> getTopNPopularFilms(Integer count, Integer genreId, Integer year) {
         List<Film> films = new ArrayList<>(filmStorage.getTopNPopularFilms(count, genreId, year));
         updateGenreAndMpaAndLikeAndDirector(films);
         return films;
     }
 
-    // получение фильмов по режиссёрам с сортировкой
     public List<Film> getFilmsByDirector(Integer directorId, Optional<String> sortParam) {
         Director director = directorStorage.getDirector(directorId);
         if (director == null) {
-            throw new DirNotFoundException("Режиссёр с ID = " + directorId + " не найден.");
+            throw new DirectorNotFoundException("Режиссёр с ID = " + directorId + " не найден.");
         }
         List<Film> films;
         if (sortParam.isPresent()) {
@@ -166,19 +161,16 @@ public class FilmService {
         }
     }
 
-    // вынес в отдельный метод добавления в БД
     private void putGenreAndDirector(Film film) {
-        genreStorage.addFilmGenres(film); // жанры добавляются сразу все (было по отдельности, addGenreToFilm удалил)
-        directorStorage.addFilmDirectors(film); // режиссёры добавляются сразу все (было по отдельности)
+        genreStorage.addFilmGenres(film);
+        directorStorage.addFilmDirectors(film);
     }
 
-    // вынес в отдельный метод удаление из БД
     private void deleteGenreAndDirector(Long filmId) {
         genreStorage.deleteGenresFromFilm(filmId);
         directorStorage.deleteDirectorsFromFilm(filmId);
     }
 
-    // добавил режиссёров
     private void updateGenreAndMpaAndLikeAndDirector(Collection<Film> films) {
         List<Long> filmIds = new ArrayList<>();
         for (Film film : films) {
@@ -195,18 +187,15 @@ public class FilmService {
             Mpa mpa = mpaMap.get(filmId);
             Set<Long> likeSet = likes.get(filmId);
             Set<Director> directorSet = directors.get(filmId);
-            // добавил проверку на размер списка из БД
             if (genreSet != null && genreSet.size() != 0) {
                 film.setGenres(genreSet);
             }
             if (mpa != null) {
                 film.setMpa(mpa);
             }
-            // добавил проверку на размер списка из БД
             if (likeSet != null && likeSet.size() != 0) {
                 film.setLikes(likeSet);
             }
-            // добавил проверку на размер списка из БД
             if (directorSet != null && directorSet.size() != 0) {
                 film.setDirectors(directorSet);
             }
