@@ -59,15 +59,13 @@ public class FilmController {
         filmService.removeLike(id, userId);
     }
 
-    @GetMapping("/popular")
-    public List<Film> getTopNPopularFilms(@RequestParam(required = false) Long count) {
-        if (count == null) {
-            log.info("Получен GET-запрос к эндпоинту '/films/popular'");
-            return filmService.getTopNPopularFilms(10L);
-        }
-        log.info("Получен GET-запрос к эндпоинту '/films/popular?count={count}' " +
-                "на получение топ-{} фильмов.", count);
-        return filmService.getTopNPopularFilms(count);
+    // убрал аналогичный метод, оставил обновленный
+    @GetMapping("popular")
+    public List<Film> getTopNPopularFilms(@RequestParam(required = false, defaultValue = "10") Integer count,
+                                      @RequestParam(required = false) Integer genreId,
+                                      @RequestParam(required = false) Integer year) {
+        log.info("Был вызван GET метод getPopularFilms");
+        return filmService.getTopNPopularFilms(count, genreId, year);
     }
 
     @DeleteMapping("/{id}")
@@ -86,6 +84,14 @@ public class FilmController {
                                   @RequestParam @NotNull List<String> by) {
         return filmService.searchFilms(query, by);
     }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam Long userId, @RequestParam Long friendId) {
+        log.info("Получен GET-запрос к эндпоинту '/films/common?userId={userId}&friendId={friendId}' на получение " +
+                "списка общих фильмов у пользователя с ID = {} с пользователем с ID = {}.", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
 }
 
 

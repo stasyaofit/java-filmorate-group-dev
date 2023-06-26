@@ -23,7 +23,7 @@ public interface FilmStorage {
 
     void removeLike(Long filmId, Long userId);
 
-    List<Film> getTopNPopularFilms(Long count);
+    List<Film> getCommonFilms(Long userId, Long friendId);
 
     Map<Long, Set<Long>> getLikeMap(List<Long> ids);
 
@@ -34,4 +34,6 @@ public interface FilmStorage {
     List<Film> getFilmsDirectorSortByLikes(Integer directorId);
 
     List<Film> searchFilmsByNameOrDirector(String textQuery, List<String> searchParams);
+
+    List<Film> getTopNPopularFilms(Integer count, Integer genreId, Integer year);
 }
