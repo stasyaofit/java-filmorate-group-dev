@@ -23,11 +23,8 @@ import java.util.Collection;
 public class ReviewService {
 
     private final ReviewStorage reviewStorage;
-
     private final UserStorage userStorage;
-
     private final FilmStorage filmStorage;
-
     private final FeedStorage feedStorage;
 
     @Autowired
@@ -68,24 +65,32 @@ public class ReviewService {
         review.setReviewId(reviewId);
         log.info("Добавили отзыв: {}", review);
         feedStorage.addFeed(reviewId, review.getUserId(), EventType.REVIEW, Operation.ADD);
-        return getReviewById(reviewId);
-    }
-
-    public Review updateReview(Review review) {
-        checkReviewId(review.getReviewId());
-        review = reviewStorage.updateReview(review);
-        log.info("Обновлен отзыв c id = {}", review.getReviewId());
-        feedStorage.addFeed(review.getReviewId(), review.getUserId(), EventType.REVIEW, Operation.UPDATE);
         return review;
     }
 
+    public Review updateReview(Review review) {
+        Long requestedId = review.getReviewId();
+        review = reviewStorage.updateReview(review);
+        if (review == null) {
+            throw new UserNotFoundException("Отзыв  с ID = " + requestedId + " не найден.");
+        } else {
+            log.info("Обновлен отзыв c id = {}", review.getReviewId());
+            feedStorage.addFeed(review.getReviewId(), review.getUserId(), EventType.REVIEW, Operation.UPDATE);
+            return review;
+        }
+    }
+
     public void deleteReview(Long reviewId) {
-        checkReviewId(reviewId);
-        Long userId = getReviewById(reviewId).getUserId();
-        reviewStorage.deleteReview(reviewId);
-        log.info("Удален отзыв c id = {}", reviewId);
-        checkUserId(userId);
-        feedStorage.addFeed(reviewId, userId, EventType.REVIEW, Operation.REMOVE);
+        Review review = getReviewById(reviewId);
+        if (review == null) {
+            throw new UserNotFoundException("Отзыв  с ID = " + reviewId + " не найден.");
+        } else {
+            Long userId = review.getUserId();
+            reviewStorage.deleteReview(reviewId);
+            log.info("Удален отзыв c id = {}", reviewId);
+            checkUserId(userId);
+            feedStorage.addFeed(reviewId, userId, EventType.REVIEW, Operation.REMOVE);
+        }
     }
 
     public Review getReviewById(Long reviewId) {
