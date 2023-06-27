@@ -90,8 +90,7 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getCommonFilms(Long userId, Long friendId) {
         String getCommonQuery = "SELECT * FROM films f WHERE film_id IN " +
                 "(SELECT l1.film_id FROM film_likes l1, film_likes l2 " +
-                "WHERE l1.film_id = l2.film_id AND l1.user_id = ? AND l2.user_id = ? " +
-                "GROUP BY l1.film_id ORDER BY COUNT(l1.user_id) DESC)";
+                "WHERE l1.film_id = l2.film_id AND l1.user_id = ? AND l2.user_id = ? )";
         return jdbcTemplate.query(getCommonQuery, this::mapRowToFilm, userId, friendId);
     }
 
