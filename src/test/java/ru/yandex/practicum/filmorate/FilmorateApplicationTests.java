@@ -170,10 +170,10 @@ class FilmorateApplicationTests {
 
     @Test
     public void testGetFilms() {
-        firstFilm = filmStorage.createFilm(firstFilm);
-        secondFilm = filmStorage.createFilm(secondFilm);
-        thirdFilm = filmStorage.createFilm(thirdFilm);
-        Collection<Film> listFilms = filmStorage.findAll();
+        firstFilm = filmService.createFilm(firstFilm);
+        secondFilm = filmService.createFilm(secondFilm);
+        thirdFilm = filmService.createFilm(thirdFilm);
+        Collection<Film> listFilms = filmService.findAll();
         assertThat(listFilms).contains(firstFilm);
         assertThat(listFilms).contains(secondFilm);
         assertThat(listFilms).contains(thirdFilm);

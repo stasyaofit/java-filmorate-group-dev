@@ -29,7 +29,7 @@ public class Film {
     private Set<Long> likes = new HashSet<>();
     private Mpa mpa;
     private Set<Genre> genres = new HashSet<>();
-    private Set<Director> directors = new LinkedHashSet<>();
+    private Set<Director> directors = new HashSet<>();
 
     public Map<String, Object> toMap() {
         Map<String, Object> values = new HashMap<>();

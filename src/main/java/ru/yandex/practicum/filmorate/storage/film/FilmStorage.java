@@ -17,7 +17,7 @@ public interface FilmStorage {
 
     Film updateFilm(Film film);
 
-    void deleteFilm(Long id);
+    boolean deleteFilm(Long id);
 
     void addLike(Long filmId, Long userId);
 
@@ -36,4 +36,6 @@ public interface FilmStorage {
     List<Film> searchFilmsByNameOrDirector(String textQuery, List<String> searchParams);
 
     List<Film> getTopNPopularFilms(Integer count, Integer genreId, Integer year);
+
+    Map<Long, Set<Film>> getLikesFilms();
 }
