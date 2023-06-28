@@ -5,8 +5,10 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -39,9 +41,16 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     @Override
-    public void addGenreToFilm(Long filmId, Integer genreId) {
-        jdbcTemplate.update("INSERT INTO FILM_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)",
-                filmId, genreId);
+    // новый метод, добавляет сразу все жанры
+    public void addFilmGenres(Film film) {
+        Set<Genre> genres = new LinkedHashSet<>(film.getGenres());
+        String sql = "INSERT INTO FILM_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?);";
+        jdbcTemplate.batchUpdate(sql, genres, genres.size(),
+                (PreparedStatement ps, Genre genre) -> {
+                    ps.setLong(1, film.getId());
+                    ps.setInt(2, genre.getId());
+                }
+        );
     }
 
     @Override

@@ -17,13 +17,25 @@ public interface FilmStorage {
 
     Film updateFilm(Film film);
 
-    void deleteFilm(Long id);
+    boolean deleteFilm(Long id);
 
     void addLike(Long filmId, Long userId);
 
     void removeLike(Long filmId, Long userId);
 
-    List<Film> getTopNPopularFilms(Long count);
+    List<Film> getCommonFilms(Long userId, Long friendId);
 
     Map<Long, Set<Long>> getLikeMap(List<Long> ids);
+
+    List<Film> getFilmsByDirector(Integer directorId);
+
+    List<Film> getFilmsDirectorSortByYear(Integer directorId);
+
+    List<Film> getFilmsDirectorSortByLikes(Integer directorId);
+
+    List<Film> searchFilmsByNameOrDirector(String textQuery, List<String> searchParams);
+
+    List<Film> getTopNPopularFilms(Integer count, Integer genreId, Integer year);
+
+    Map<Long, Set<Film>> getLikesFilms();
 }

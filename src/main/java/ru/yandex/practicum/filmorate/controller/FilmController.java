@@ -7,8 +7,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import java.util.Collection;
-import java.util.List;
+import javax.validation.constraints.NotNull;
+import java.util.*;
 
 @Slf4j
 @RestController
@@ -59,21 +59,37 @@ public class FilmController {
         filmService.removeLike(id, userId);
     }
 
-    @GetMapping("/popular")
-    public List<Film> getTopNPopularFilms(@RequestParam(required = false) Long count) {
-        if (count == null) {
-            log.info("Получен GET-запрос к эндпоинту '/films/popular'");
-            return filmService.getTopNPopularFilms(10L);
-        }
-        log.info("Получен GET-запрос к эндпоинту '/films/popular?count={count}' " +
-                "на получение топ-{} фильмов.", count);
-        return filmService.getTopNPopularFilms(count);
+    // убрал аналогичный метод, оставил обновленный
+    @GetMapping("popular")
+    public List<Film> getTopNPopularFilms(@RequestParam(required = false, defaultValue = "10") Integer count,
+                                          @RequestParam(required = false) Integer genreId,
+                                          @RequestParam(required = false) Integer year) {
+        log.info("Был вызван GET метод getPopularFilms");
+        return filmService.getTopNPopularFilms(count, genreId, year);
     }
 
     @DeleteMapping("/{id}")
     public void deleteFilm(@PathVariable Long id) {
         log.info("Получен DELETE-запрос к эндпоинту: '/films' на удаление фильма с ID={}", id);
         filmService.deleteFilm(id);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirector(@PathVariable Integer directorId, @RequestParam Optional<String> sortBy) {
+        return filmService.getFilmsByDirector(directorId, sortBy);
+    }
+
+    @GetMapping("/search")
+    public List<Film> searchFilms(@RequestParam String query,
+                                  @RequestParam @NotNull List<String> by) {
+        return filmService.searchFilms(query, by);
+    }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam Long userId, @RequestParam Long friendId) {
+        log.info("Получен GET-запрос к эндпоинту '/films/common?userId={userId}&friendId={friendId}' на получение " +
+                "списка общих фильмов у пользователя с ID = {} с пользователем с ID = {}.", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
     }
 }
 

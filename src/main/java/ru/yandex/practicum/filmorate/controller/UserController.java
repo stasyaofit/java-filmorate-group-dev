@@ -3,7 +3,10 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Feed;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
@@ -15,10 +18,12 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
+    private final FilmService filmService;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, FilmService filmService) {
         this.userService = userService;
+        this.filmService = filmService;
     }
 
     @GetMapping
@@ -65,13 +70,11 @@ public class UserController {
         userService.deleteUser(id);
     }
 
-
     @GetMapping("/{id}/friends")
     public List<User> getUserFriendsById(@PathVariable Long id) {
         log.info("Получен GET-запрос к эндпоинту '/users/{id}/friends' на получение " +
                 "списка друзей пользователя с ID = {}.", id);
         return userService.getUserFriendsById(id);
-
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
@@ -79,5 +82,19 @@ public class UserController {
         log.info("Получен GET-запрос к эндпоинту '/users/{id}/friends/common/{otherId}' на получение " +
                 "списка общих друзей у пользователя с ID = {} с пользователем с ID = {}.", id, otherId);
         return userService.getCommonFriends(id, otherId);
+    }
+
+    @GetMapping("/{id}/feed")
+    public List<Feed> getFeedByUserId(@PathVariable Long id) {
+        log.info("Получен GET-запрос к эндпоинту '/users/{id}/feed' на получение " +
+                "ленты событий для пользователя с ID = {}.", id);
+        return userService.getFeedByUserId(id);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public List<Film> getRecommendationsByUserId(@PathVariable Long id) {
+        log.info("Получен GET-запрос к эндпоинту '/users/{id}/recommendations' на получение " +
+                "рекомендованных фильмов для пользователя с ID = {}.", id);
+        return filmService.getRecommendationsByUserId(id);
     }
 }

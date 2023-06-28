@@ -1,3 +1,13 @@
+DROP ALL OBJECTS;
+
+create table if not exists DIRECTOR
+(
+    DIRECTOR_ID   BIGINT auto_increment,
+    DIRECTOR_NAME CHARACTER VARYING(50) not null,
+    constraint "DIRECTOR_pk"
+        primary key (DIRECTOR_ID)
+);
+
 create table if not exists USERS
 (
     USER_ID  BIGINT auto_increment,
@@ -39,6 +49,18 @@ create table if not exists FILMS
         foreign key (RATING_ID) references MPA_RATINGS ON DELETE RESTRICT
 );
 
+create table if not exists FILM_DIRECTOR
+(
+    FILM_ID     BIGINT  not null,
+    DIRECTOR_ID INTEGER not null,
+    constraint "FILM_DIRECTOR_pk"
+        primary key (FILM_ID, DIRECTOR_ID),
+    constraint "FILM_DIRECTOR_DIRECTOR_DIRECTOR_ID_fk"
+        foreign key (DIRECTOR_ID) references DIRECTOR ON DELETE CASCADE,
+    constraint "FILM_DIRECTOR_FILMS_FILM_ID_fk"
+        foreign key (FILM_ID) references FILMS ON DELETE CASCADE
+);
+
 create table if not exists FILM_LIKES
 (
     FILM_ID BIGINT not null,
@@ -76,6 +98,47 @@ create table if not exists FRIENDS
         foreign key (FRIEND_ID) references USERS ON DELETE CASCADE
 );
 
+create table if not exists REVIEWS
+(
+    REVIEW_ID          BIGINT auto_increment,
+    CONTENT CHARACTER VARYING(200) not null,
+    FILM_ID BIGINT not null,
+    USER_ID BIGINT not null,
+    IS_POSITIVE BOOLEAN,
+    constraint REVIEWS_PK
+        primary key (REVIEW_ID),
+    constraint "reviews_FILMS_FILM_ID_fk"
+        foreign key (FILM_ID) references FILMS ON DELETE CASCADE,
+    constraint "reviews_USERS_USER_ID_fk"
+        foreign key (USER_ID) references USERS ON DELETE CASCADE
+);
+
+create table if not exists REVIEW_LIKES
+(
+    REVIEW_ID BIGINT not null,
+    USER_ID BIGINT not null,
+    LIKE_RATING BIGINT not null,
+    constraint REVIEW_LIKES_PK
+        primary key (REVIEW_ID, USER_ID),
+    constraint "review_likes_REVIEWS_REVIEW_ID_fk"
+        foreign key (REVIEW_ID) references REVIEWS ON DELETE CASCADE,
+    constraint "review_likes_USERS_USER_ID_fk"
+        foreign key (USER_ID) references USERS ON DELETE CASCADE
+);
+
+create table if not exists FEED
+(
+    EVENT_ID   BIGINT auto_increment,
+    ENTITY_ID  BIGINT     not null,
+    USER_ID    BIGINT     not null,
+    CREATED_TS TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    EVENT_TYPE varchar(6) not null,
+    OPERATION  varchar(6) not null,
+    constraint "FEED_pk"
+        primary key (EVENT_ID),
+    constraint "FEED_USERS_USER_ID_fk"
+        foreign key (USER_ID) references USERS ON DELETE CASCADE
+);
 
 
 

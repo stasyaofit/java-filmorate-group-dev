@@ -45,9 +45,9 @@ public class UserDbStorage implements UserStorage {
                 .withTableName("USERS")
                 .usingGeneratedKeyColumns("USER_ID");
         Long id = simpleJdbcInsert.executeAndReturnKey(user.toMap()).longValue();
+        user.setId(id);
         log.info("Пользователь с ID = {} успешно добавлен.", id);
-        return getUser(id);
-
+        return user;
     }
 
     @Override
