@@ -62,8 +62,8 @@ public class FilmController {
     // убрал аналогичный метод, оставил обновленный
     @GetMapping("popular")
     public List<Film> getTopNPopularFilms(@RequestParam(required = false, defaultValue = "10") Integer count,
-                                      @RequestParam(required = false) Integer genreId,
-                                      @RequestParam(required = false) Integer year) {
+                                          @RequestParam(required = false) Integer genreId,
+                                          @RequestParam(required = false) Integer year) {
         log.info("Был вызван GET метод getPopularFilms");
         return filmService.getTopNPopularFilms(count, genreId, year);
     }
@@ -91,7 +91,6 @@ public class FilmController {
                 "списка общих фильмов у пользователя с ID = {} с пользователем с ID = {}.", userId, friendId);
         return filmService.getCommonFilms(userId, friendId);
     }
-
 }
 
 

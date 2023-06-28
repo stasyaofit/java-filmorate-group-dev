@@ -9,8 +9,8 @@ import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.ReviewNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.model.enums.EventType;
-import ru.yandex.practicum.filmorate.model.enums.Operation;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.storage.feed.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
@@ -29,9 +29,9 @@ public class ReviewService {
 
     @Autowired
     public ReviewService(@Qualifier("reviewDbStorage") ReviewStorage reviewStorage,
-            @Qualifier("userDbStorage") UserStorage userStorage,
-            @Qualifier("filmDbStorage") FilmStorage filmStorage,
-            @Qualifier("feedDbStorage") FeedStorage feedStorage) {
+                         @Qualifier("userDbStorage") UserStorage userStorage,
+                         @Qualifier("filmDbStorage") FilmStorage filmStorage,
+                         @Qualifier("feedDbStorage") FeedStorage feedStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.reviewStorage = reviewStorage;
@@ -73,24 +73,22 @@ public class ReviewService {
         review = reviewStorage.updateReview(review);
         if (review == null) {
             throw new UserNotFoundException("Отзыв  с ID = " + requestedId + " не найден.");
-        } else {
-            log.info("Обновлен отзыв c id = {}", review.getReviewId());
-            feedStorage.addFeed(review.getReviewId(), review.getUserId(), EventType.REVIEW, Operation.UPDATE);
-            return review;
         }
+        log.info("Обновлен отзыв c id = {}", review.getReviewId());
+        feedStorage.addFeed(review.getReviewId(), review.getUserId(), EventType.REVIEW, Operation.UPDATE);
+        return review;
     }
 
     public void deleteReview(Long reviewId) {
         Review review = getReviewById(reviewId);
         if (review == null) {
             throw new UserNotFoundException("Отзыв  с ID = " + reviewId + " не найден.");
-        } else {
-            Long userId = review.getUserId();
-            reviewStorage.deleteReview(reviewId);
-            log.info("Удален отзыв c id = {}", reviewId);
-            checkUserId(userId);
-            feedStorage.addFeed(reviewId, userId, EventType.REVIEW, Operation.REMOVE);
         }
+        Long userId = review.getUserId();
+        reviewStorage.deleteReview(reviewId);
+        log.info("Удален отзыв c id = {}", reviewId);
+        checkUserId(userId);
+        feedStorage.addFeed(reviewId, userId, EventType.REVIEW, Operation.REMOVE);
     }
 
     public Review getReviewById(Long reviewId) {

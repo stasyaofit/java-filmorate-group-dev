@@ -16,21 +16,21 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleValidate(final ValidationException e) {
-        log.error(e.getMessage());
+        log.error(e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {
-        log.error(e.getMessage());
+        log.error(e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleIncorrectParameterException(final IncorrectParameterException e) {
-        log.error(e.getMessage());
+        log.error(e.getMessage(), e);
         return new ErrorResponse(
                 String.format("Ошибка с полем \"%s\".", e.getParameter())
         );
@@ -39,49 +39,49 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleUserNotFound(final UserNotFoundException e) {
-        log.error(e.getMessage());
+        log.error(e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleFilmNotFound(final FilmNotFoundException e) {
-        log.error(e.getMessage());
+        log.error(e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleMpaNotFound(final MpaNotFoundException e) {
-        log.error(e.getMessage());
+        log.error(e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleGenreNotFound(final GenreNotFoundException e) {
-        log.error(e.getMessage());
+        log.error(e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleReviewNotFoundException(final ReviewNotFoundException e) {
-        log.error(e.getMessage());
+        log.error(e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleDirectorNotFoundException(final DirectorNotFoundException e) {
-        log.error(e.getMessage());
+        log.error(e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler({Exception.class})
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleThrowable(final Throwable e) {
-        log.error(e.getMessage());
+        log.error(e.getMessage(), e);
         return new ErrorResponse(e.getMessage());
     }
 }

@@ -20,22 +20,26 @@ public class DirectorService {
     }
 
     public Director createDirector(Director director) {
-        Integer id = directorStorage.createDirector(director).getId();
+        director = directorStorage.createDirector(director);
         log.info("Добавлен режиссёр с: {}", director.getName());
-        return getDirectorById(id);
+        return director;
     }
 
     public Director updateDirector(Director director) {
         Integer id = director.getId();
-        checkDirectorId(id);
-        directorStorage.updateDirector(director);
+        director = directorStorage.updateDirector(director);
+        if (director == null) {
+            throw new DirectorNotFoundException("Режиссёр с ID = " + id + " не найден.");
+        }
         log.info("Обновлен режиссёр c id = {}", id);
         return director;
     }
 
     public void deleteDirector(Integer id) {
-        checkDirectorId(id);
-        directorStorage.deleteDirector(id);
+        if (!directorStorage.deleteDirector(id)) {
+            throw new DirectorNotFoundException("Режиссёр с ID = " + id + " не найден.");
+        }
+        log.info("Удалён режиссёр c id = {} ", id);
     }
 
     public Collection<Director> findAll() {
@@ -48,11 +52,5 @@ public class DirectorService {
             throw new DirectorNotFoundException("Режиссёр с ID = " + id + " не найден.");
         }
         return director;
-    }
-
-    private void checkDirectorId(Integer id) {
-        if (id < 1 || directorStorage.getDirector(id) == null) {
-            throw new DirectorNotFoundException("Режиссёр с ID = " + id + " не найден.");
-        }
     }
 }

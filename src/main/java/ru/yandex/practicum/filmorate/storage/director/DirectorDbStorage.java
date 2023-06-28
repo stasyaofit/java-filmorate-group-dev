@@ -24,14 +24,14 @@ public class DirectorDbStorage implements DirectorStorage {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Override
-    // до этого что-то намудрил с ключом и парсингом
     public Director createDirector(Director director) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("DIRECTOR")
                 .usingGeneratedKeyColumns("DIRECTOR_ID");
         Integer id = simpleJdbcInsert.executeAndReturnKey(director.toMap()).intValue();
+        director.setId(id);
         log.info("Режиссёр с ID = {} успешно добавлен.", id);
-        return getDirector(id);
+        return director;
     }
 
     @Override
@@ -45,10 +45,8 @@ public class DirectorDbStorage implements DirectorStorage {
     }
 
     @Override
-    public void deleteDirector(Integer id) {
-        if (jdbcTemplate.update("DELETE FROM director WHERE DIRECTOR_ID = ? ", id) > 0) {
-            log.info("Режиссёр с ID={} успешно удален", id);
-        }
+    public boolean deleteDirector(Integer id) {
+        return jdbcTemplate.update("DELETE FROM director WHERE DIRECTOR_ID = ? ", id) > 0;
     }
 
     @Override

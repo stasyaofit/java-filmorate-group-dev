@@ -13,7 +13,7 @@ public interface DirectorStorage {
 
     Director updateDirector(Director director);
 
-    void deleteDirector(Integer id);
+    boolean deleteDirector(Integer id);
 
     Collection<Director> findAll();
 
