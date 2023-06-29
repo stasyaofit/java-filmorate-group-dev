@@ -8,7 +8,10 @@ import org.hibernate.validator.constraints.Length;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Positive;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 @Data
 @RequiredArgsConstructor
@@ -26,7 +29,8 @@ public class Film {
 
     @Positive(message = "Продолжительность фильма должна быть положительной")
     private int duration;
-    private Set<Long> likes = new HashSet<>();
+    // есть вопрос: стоит ли тут ограничивать аннотацией значения переменной, если проверку я добавил в БД
+    private double mark;
     private Mpa mpa;
     private Set<Genre> genres = new HashSet<>();
     private Set<Director> directors = new HashSet<>();

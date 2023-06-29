@@ -275,6 +275,36 @@ public class FilmDbStorage implements FilmStorage {
         return userFilmsMap;
     }
 
+    @Override
+    public boolean addMark(Long filmId, Long userId, Integer mark) {
+        return false;
+    }
+
+    @Override
+    public boolean updateMark(Long filmId, Long userId, Integer mark) {
+        return false;
+    }
+
+    @Override
+    public boolean deleteMark(Long filmId, Long userId, Integer mark) {
+        return false;
+    }
+
+    @Override
+    public Map<Long, List<Integer>> getFilmsMarks(Long filmId) {
+        return null;
+    }
+
+    @Override
+    public Map<Long, Double> getFilmsAvgMarks(Long filmId) {
+        return null;
+    }
+
+    @Override
+    public List<Film> getFilmsByUserWhereMarkIsPositive(Long userId) {
+        return null;
+    }
+
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
         Film film = new Film();
         film.setId(rs.getLong("FILM_ID"));

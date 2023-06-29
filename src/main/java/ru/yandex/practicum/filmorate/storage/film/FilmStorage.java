@@ -38,4 +38,27 @@ public interface FilmStorage {
     List<Film> getTopNPopularFilms(Integer count, Integer genreId, Integer year);
 
     Map<Long, Set<Film>> getLikesFilms();
+
+    // набросал функции чисто так, что текло из головы, а в крови другое, пришёл с др =)))
+    boolean addMark(Long filmId, Long userId, Integer mark);
+
+    boolean updateMark(Long filmId, Long userId, Integer mark);
+
+    boolean deleteMark(Long filmId, Long userId, Integer mark);
+
+    // методы ниже отчасти дублируют  друг друга
+    // мапа: фильм и список его оценок
+    Map<Long, List<Integer>> getFilmsMarks(Long filmId);
+
+    /* мапа: фильм и его средняя оценка ( если по старой схеме то,
+    понадобиться для обновления оценок у фильма, вкупе с жанрами и режиссёрами)
+     */
+    Map<Long, Double> getFilmsAvgMarks(Long filmId);
+
+        /* Список фильмов пользователя с положительными оценками, может понадобится для рекомендаций
+    (думаю можно вынести отдельный метод, либо из getFilmsMarks(Long filmId) по условию отобрать,
+    ещё как вариант добавить доп.поле(isPositive) в таблицу film_marks, которое характеризует оценку)
+     */
+    List<Film> getFilmsByUserWhereMarkIsPositive(Long userId);
+
 }

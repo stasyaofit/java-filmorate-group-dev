@@ -73,6 +73,21 @@ create table if not exists FILM_LIKES
         foreign key (USER_ID) references USERS ON DELETE CASCADE
 );
 
+create table if not exists  FILM_MARKS
+(
+    FILM_ID BIGINT not null,
+    USER_ID BIGINT not null,
+    MARK    INTEGER,
+    constraint "FILM_MARKS_pk"
+        primary key (FILM_ID, USER_ID),
+    constraint "FILM_MARKS_FILMS_FILM_ID_fk"
+        foreign key (FILM_ID) references FILMS ON DELETE CASCADE,
+    constraint "FILM_MARKS_USERS_USER_ID_fk"
+        foreign key (USER_ID) references USERS ON DELETE CASCADE,
+    check (("MARK" >= 1)
+        AND ("MARK" <= 10))
+);
+
 create table if not exists FILM_GENRES
 (
     FILM_ID  BIGINT  not null,
