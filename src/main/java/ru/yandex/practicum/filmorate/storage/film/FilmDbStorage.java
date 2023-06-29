@@ -286,7 +286,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public boolean deleteMark(Long filmId, Long userId, Integer mark) {
+    public boolean deleteMark(Long filmId, Long userId) {
         return false;
     }
 

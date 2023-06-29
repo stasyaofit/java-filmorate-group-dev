@@ -44,7 +44,7 @@ public interface FilmStorage {
 
     boolean updateMark(Long filmId, Long userId, Integer mark);
 
-    boolean deleteMark(Long filmId, Long userId, Integer mark);
+    boolean deleteMark(Long filmId, Long userId);
 
     // методы ниже отчасти дублируют  друг друга
     // мапа: фильм и список его оценок
